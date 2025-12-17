@@ -85,7 +85,7 @@ const MembersModal = ({ visible, onClose, members = [] }) => {
 
                                     <View style={{ flex: 1 }}>
                                         <CustomText weight="medium" style={styles.name}>
-                                            {item.email}
+                                            {item.memberId?.email || item.email}
                                         </CustomText>
                                     </View>
 
