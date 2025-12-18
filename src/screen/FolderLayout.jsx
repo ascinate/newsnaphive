@@ -94,7 +94,12 @@ const FolderLayout = ({ navigation, route }) => {
     const fetchHive = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
-        if (!token) return;
+        const storedUser = await AsyncStorage.getItem("user");
+
+        if (!token || !storedUser) return;
+
+        const loggedInUser = JSON.parse(storedUser);
+        const loggedInUserId = loggedInUser._id;
 
         const res = await axios.get(
           `https://snaphive-node.vercel.app/api/hives/${hiveId}`,
@@ -106,19 +111,38 @@ const FolderLayout = ({ navigation, route }) => {
         // PHOTOS
         setUploadedImages(hive.images || []);
 
-        // ⭐ SET MEMBERS LIST
-        setMembersList(hive.members || []);
+        const combinedMembers = [
+          {
+            _id: hive.user._id,
+            email: hive.user.email,
+            name: hive.user.name,
+            profileImage: hive.user.profileImage,
+            role: "owner",
+          },
+          ...(hive.members || []).map(m => ({
+            _id: m.memberId?._id,
+            email: m.memberId?.email || m.email,
+            name: m.memberId?.name,
+            profileImage: m.memberId?.profileImage,
+            role: "member",
+            status: m.status,
+          })),
+        ];
+
+        // 🔥 REMOVE LOGGED-IN USER ONLY
+        const finalMembers = combinedMembers.filter(
+          m => m._id?.toString() !== loggedInUserId
+        );
+
+        setMembersList(finalMembers);
 
       } catch (err) {
         console.error("Error fetching hive:", err);
       }
     };
 
-
-    if (hiveId) {
-      fetchHive();
-    }
-  }, [hiveId, setEvents]);
+    if (hiveId) fetchHive();
+  }, [hiveId]);
 
 
   const formatDisplayDate = (date) => {
@@ -521,68 +545,71 @@ const FolderLayout = ({ navigation, route }) => {
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ flexDirection: 'row', gap: width * 0.025, paddingHorizontal: width * 0.0375, paddingVertical: height * 0.0125 }}>
-                  <View style={styles.allMembarShadowWrapper}>
-                    <Image source={profilePic} style={styles.allMembarDp} />
-                  </View>
-                  <View style={styles.allMembarShadowWrapper}>
-                    <Image source={profilePic} style={styles.allMembarDp} />
-                  </View>
-                  <View style={styles.allMembarShadowWrapper}>
-                    <Image source={profilePic} style={styles.allMembarDp} />
-                  </View>
-                  <View style={styles.allMembarShadowWrapper}>
-                    <Image source={profilePic} style={styles.allMembarDp} />
-                  </View>
-                  <View style={styles.allMembarShadowWrapper}>
-                    <Image source={profilePic} style={styles.allMembarDp} />
-                  </View>
-                  <View style={styles.allMembarShadowWrapper}>
-                    <Image source={profilePic} style={styles.allMembarDp} />
-                  </View>
-                  <View style={styles.allMembarShadowWrapper}>
-                    <Image source={profilePic} style={styles.allMembarDp} />
-                  </View>
-                  <View style={styles.allMembarShadowWrapper}>
-                    <Image source={profilePic} style={styles.allMembarDp} />
-                  </View>
+                  contentContainerStyle={{
+                    flexDirection: 'row',
+                    gap: width * 0.025,
+                    paddingHorizontal: width * 0.0375,
+                    paddingVertical: height * 0.0125
+                  }}
+                >
+                  {membersList.map((m, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      onPress={() => navigation.navigate("Chat", { user: m })}
+                    >
+                      <View style={styles.allMembarShadowWrapper}>
+                        <Image
+                          source={{ uri: m.profileImage }}
+                          style={styles.allMembarDp}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
 
+
                 <View style={styles.chatList}>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate("Chat")}
-                  >
-                    <View style={styles.shadowWrapper}>
-                      <View style={styles.chatListItem}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: width * 0.0375 }}>
-                          <Image source={profilePic} style={styles.dp} />
-                          <View>
-                            <CustomText weight="bold">{t('userName')}</CustomText>
-                            <CustomText weight="medium"
-                              numberOfLines={1}
-                              ellipsizeMode="tail"
-                              style={{ maxWidth: width * 0.4, fontSize: width * 0.03, color: '#888888' }}
-                            >It is a long established fact that a reader will be distracted by the readable content.</CustomText>
+                  {membersList.map((m, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      onPress={() => navigation.navigate("Chat", { user: m })}
+                    >
+                      <View style={styles.shadowWrapper}>
+                        <View style={styles.chatListItem}>
+
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: width * 0.0375 }}>
+                            <Image source={{ uri: m.profileImage }} style={styles.dp} />
+
+                            <View>
+                              <CustomText weight="bold">{m.name}</CustomText>
+
+                              <CustomText
+                                weight="medium"
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                                style={{
+                                  maxWidth: width * 0.4,
+                                  fontSize: width * 0.03,
+                                  color: '#888'
+                                }}
+                              >
+                                Start chatting with {m.name}
+                              </CustomText>
+                            </View>
                           </View>
-                        </View>
-                        <View style={{ alignItems: 'flex-end', minWidth: width * 0.15 }}>
-                          <CustomText weight="medium" style={{ fontSize: width * 0.03 }}>5 {t('hoursAgo')}</CustomText>
-                          <View style={{
-                            backgroundColor: '#FF0800',
-                            width: width * 0.05,
-                            height: width * 0.05,
-                            borderRadius: width * 0.025,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            marginTop: height * 0.0075
-                          }}>
-                            <CustomText weight="medium" style={{ color: '#fff' }}>1</CustomText>
+
+                          <View style={{ alignItems: 'flex-end', minWidth: width * 0.15 }}>
+                            <CustomText weight="medium" style={{ fontSize: width * 0.03 }}>
+                              Online
+                            </CustomText>
                           </View>
+
                         </View>
                       </View>
-                    </View>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  ))}
                 </View>
+
               </>
             )}
           </ScrollView>

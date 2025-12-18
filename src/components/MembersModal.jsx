@@ -85,17 +85,26 @@ const MembersModal = ({ visible, onClose, members = [] }) => {
 
                                     <View style={{ flex: 1 }}>
                                         <CustomText weight="medium" style={styles.name}>
-                                            {item.memberId?.email || item.email}
+                                            {item.role === "owner"
+                                                ? `${item.email} (Owner)`
+                                                : item.email}
                                         </CustomText>
                                     </View>
 
                                     {/* Status Buttons */}
-                                    {item.status === "pending" ? (
+                                    {item.role === "owner" ? (
+                                   
+                                        <View style={styles.memberBox}>
+                                            <CustomText weight="bold" style={styles.memberTxt}></CustomText>
+                                        </View>
+                                    ) : item.status === "pending" ? (
+                                  
                                         <TouchableOpacity style={styles.addBtn}>
                                             <Plus size={16} color="#fff" />
                                             <CustomText weight="medium" style={styles.addTxt}>Pending</CustomText>
                                         </TouchableOpacity>
                                     ) : (
+                                     
                                         <View style={styles.memberBox}>
                                             <CustomText weight="bold" style={styles.memberTxt}>Member</CustomText>
                                             <TouchableOpacity>
@@ -103,6 +112,7 @@ const MembersModal = ({ visible, onClose, members = [] }) => {
                                             </TouchableOpacity>
                                         </View>
                                     )}
+
                                 </View>
                             ))
                         )}
