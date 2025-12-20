@@ -228,6 +228,58 @@ const CreateHive = ({ navigation, route }) => {
         setDate(formatted);
     }
 
+
+
+
+
+    // ios date time picker
+
+    const onStartDateChange = (event, selectedDate) => {
+        if (Platform.OS === 'android') {
+            setOpenStartDate(false);
+        }
+        if (event.type === 'set' && selectedDate) {
+            setStartDate(selectedDate);
+            if (Platform.OS === 'ios') {
+                // Don't auto-close on iOS, let user press Done
+            }
+        } else if (event.type === 'dismissed') {
+            setOpenStartDate(false);
+        }
+    };
+
+    const onEndDateChange = (event, selectedDate) => {
+        if (Platform.OS === 'android') {
+            setOpenEndDate(false);
+        }
+        if (event.type === 'set' && selectedDate) {
+            setEndDate(selectedDate);
+        } else if (event.type === 'dismissed') {
+            setOpenEndDate(false);
+        }
+    };
+
+    const onStartTimeChange = (event, selectedTime) => {
+        if (Platform.OS === 'android') {
+            setOpenStartTime(false);
+        }
+        if (event.type === 'set' && selectedTime) {
+            setStartTime(selectedTime);
+        } else if (event.type === 'dismissed') {
+            setOpenStartTime(false);
+        }
+    };
+
+    const onEndTimeChange = (event, selectedTime) => {
+        if (Platform.OS === 'android') {
+            setOpenEndTime(false);
+        }
+        if (event.type === 'set' && selectedTime) {
+            setEndTime(selectedTime);
+        } else if (event.type === 'dismissed') {
+            setOpenEndTime(false);
+        }
+    };
     return (
         <SafeAreaProvider>
             <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -569,7 +621,6 @@ const CreateHive = ({ navigation, route }) => {
                                             <View style={{ marginTop: 15 }}>
                                                 <View style={{ backgroundColor: "#ccc", height: 0.4, width: "100%" }} />
 
-                                                {/* --------------------- EVENT START DATE ---------------------- */}
                                                 <View
                                                     style={{
                                                         flexDirection: "row",
@@ -585,47 +636,46 @@ const CreateHive = ({ navigation, route }) => {
                                                     </CustomText>
                                                 </View>
 
-                                                <TouchableOpacity onPress={() => setOpenStartDate(true)}>
-                                                    <TextInput
-                                                        placeholder="Select Date"
-                                                        value={formatDate(startDate)}
-                                                        editable={false}
-                                                        style={styles.input}
-                                                    />
+                                                <TouchableOpacity
+                                                    onPress={() => setOpenStartDate(true)}
+                                                    activeOpacity={0.7}
+                                                >
+                                                    <View style={styles.input} pointerEvents="none">
+                                                        <TextInput
+                                                            placeholder="Select Date"
+                                                            value={formatDate(startDate)}
+                                                            editable={false}
+                                                            style={{ color: '#000' }}
+                                                        />
+                                                    </View>
                                                 </TouchableOpacity>
 
                                                 {openStartDate && (
-                                                    Platform.OS === "ios" ? (
-                                                        <View style={{ marginTop: 8, backgroundColor: "#fff", borderRadius: 8 }}>
-                                                            <DateTimePicker
-                                                                value={startDate}
-                                                                mode="date"
-                                                                display="spinner"
-                                                                onChange={(e, selected) => {
-                                                                    if (e.type === "set") setStartDate(selected);
-                                                                }}
-                                                            />
-                                                            <TouchableOpacity
-                                                                onPress={() => setOpenStartDate(false)}
-                                                                style={{ padding: 10, alignSelf: "flex-end" }}
-                                                            >
-                                                                <CustomText weight="bold">Done</CustomText>
-                                                            </TouchableOpacity>
-                                                        </View>
-                                                    ) : (
+                                                    <View>
                                                         <DateTimePicker
                                                             value={startDate}
                                                             mode="date"
-                                                            display="calendar"
-                                                            onChange={(e, selected) => {
-                                                                setOpenStartDate(false);
-                                                                if (selected) setStartDate(selected);
-                                                            }}
+                                                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                                            onChange={onStartDateChange}
+                                                            minimumDate={new Date()}
                                                         />
-                                                    )
+                                                        {Platform.OS === 'ios' && (
+                                                            <TouchableOpacity
+                                                                onPress={() => setOpenStartDate(false)}
+                                                                style={{
+                                                                    padding: 12,
+                                                                    backgroundColor: '#007AFF',
+                                                                    borderRadius: 8,
+                                                                    alignItems: 'center',
+                                                                    marginTop: 8
+                                                                }}
+                                                            >
+                                                                <CustomText weight="bold" style={{ color: '#fff' }}>Done</CustomText>
+                                                            </TouchableOpacity>
+                                                        )}
+                                                    </View>
                                                 )}
                                             </View>
-
                                             {/* --------------------- EVENT END DATE ---------------------- */}
                                             <View style={{ marginTop: 20 }}>
                                                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 5 }}>
@@ -635,51 +685,52 @@ const CreateHive = ({ navigation, route }) => {
                                                     </CustomText>
                                                 </View>
 
-                                                <TouchableOpacity onPress={() => setOpenEndDate(true)}>
-                                                    <TextInput
-                                                        placeholder="Select Date"
-                                                        value={formatDate(endDate)}
-                                                        editable={false}
-                                                        style={styles.input}
-                                                    />
+                                                <TouchableOpacity
+                                                    onPress={() => setOpenEndDate(true)}
+                                                    activeOpacity={0.7}
+                                                >
+                                                    <View style={styles.input} pointerEvents="none">
+                                                        <TextInput
+                                                            placeholder="Select Date"
+                                                            value={formatDate(endDate)}
+                                                            editable={false}
+                                                            style={{ color: '#000' }}
+                                                        />
+                                                    </View>
                                                 </TouchableOpacity>
 
                                                 {openEndDate && (
-                                                    Platform.OS === "ios" ? (
-                                                        <View style={{ marginTop: 8, backgroundColor: "#fff", borderRadius: 8 }}>
-                                                            <DateTimePicker
-                                                                value={endDate}
-                                                                mode="date"
-                                                                display="spinner"
-                                                                onChange={(e, selected) => {
-                                                                    if (e.type === "set") setEndDate(selected);
-                                                                }}
-                                                            />
-                                                            <TouchableOpacity
-                                                                onPress={() => setOpenEndDate(false)}
-                                                                style={{ padding: 10, alignSelf: "flex-end" }}
-                                                            >
-                                                                <CustomText weight="bold">Done</CustomText>
-                                                            </TouchableOpacity>
-                                                        </View>
-                                                    ) : (
+                                                    <View>
                                                         <DateTimePicker
                                                             value={endDate}
                                                             mode="date"
-                                                            display="calendar"
-                                                            onChange={(e, selected) => {
-                                                                setOpenEndDate(false);
-                                                                if (selected) setEndDate(selected);
-                                                            }}
+                                                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                                            onChange={onEndDateChange}
+                                                            minimumDate={startDate}
                                                         />
-                                                    )
+                                                        {Platform.OS === 'ios' && (
+                                                            <TouchableOpacity
+                                                                onPress={() => setOpenEndDate(false)}
+                                                                style={{
+                                                                    padding: 12,
+                                                                    backgroundColor: '#007AFF',
+                                                                    borderRadius: 8,
+                                                                    alignItems: 'center',
+                                                                    marginTop: 8
+                                                                }}
+                                                            >
+                                                                <CustomText weight="bold" style={{ color: '#fff' }}>Done</CustomText>
+                                                            </TouchableOpacity>
+                                                        )}
+                                                    </View>
                                                 )}
                                             </View>
+
 
                                             {/* --------------------- START TIME + END TIME ---------------------- */}
                                             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                                                 {/* START TIME */}
-                                                <View style={{ marginTop: 20, width: "50%" }}>
+                                                <View style={{ marginTop: 20, width: "48%" }}>
                                                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 5 }}>
                                                         <Timer width={16} />
                                                         <CustomText weight="semiBold" color="#374151">
@@ -687,49 +738,48 @@ const CreateHive = ({ navigation, route }) => {
                                                         </CustomText>
                                                     </View>
 
-                                                    <TouchableOpacity onPress={() => setOpenStartTime(true)}>
-                                                        <TextInput
-                                                            placeholder="Select Time"
-                                                            value={formatTime(startTime)}
-                                                            editable={false}
-                                                            style={styles.input}
-                                                        />
+                                                    <TouchableOpacity
+                                                        onPress={() => setOpenStartTime(true)}
+                                                        activeOpacity={0.7}
+                                                    >
+                                                        <View style={styles.input} pointerEvents="none">
+                                                            <TextInput
+                                                                placeholder="Select Time"
+                                                                value={formatTime(startTime)}
+                                                                editable={false}
+                                                                style={{ color: '#000' }}
+                                                            />
+                                                        </View>
                                                     </TouchableOpacity>
 
                                                     {openStartTime && (
-                                                        Platform.OS === "ios" ? (
-                                                            <View style={{ marginTop: 8, backgroundColor: "#fff", borderRadius: 8 }}>
-                                                                <DateTimePicker
-                                                                    value={startTime}
-                                                                    mode="time"
-                                                                    display="spinner"
-                                                                    onChange={(e, selected) => {
-                                                                        if (e.type === "set") setStartTime(selected);
-                                                                    }}
-                                                                />
-                                                                <TouchableOpacity
-                                                                    onPress={() => setOpenStartTime(false)}
-                                                                    style={{ padding: 10, alignSelf: "flex-end" }}
-                                                                >
-                                                                    <CustomText weight="bold">Done</CustomText>
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                        ) : (
+                                                        <View>
                                                             <DateTimePicker
                                                                 value={startTime}
                                                                 mode="time"
-                                                                display="clock"
-                                                                onChange={(e, selected) => {
-                                                                    setOpenStartTime(false);
-                                                                    if (selected) setStartTime(selected);
-                                                                }}
+                                                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                                                onChange={onStartTimeChange}
                                                             />
-                                                        )
+                                                            {Platform.OS === 'ios' && (
+                                                                <TouchableOpacity
+                                                                    onPress={() => setOpenStartTime(false)}
+                                                                    style={{
+                                                                        padding: 12,
+                                                                        backgroundColor: '#007AFF',
+                                                                        borderRadius: 8,
+                                                                        alignItems: 'center',
+                                                                        marginTop: 8
+                                                                    }}
+                                                                >
+                                                                    <CustomText weight="bold" style={{ color: '#fff' }}>Done</CustomText>
+                                                                </TouchableOpacity>
+                                                            )}
+                                                        </View>
                                                     )}
                                                 </View>
 
                                                 {/* END TIME */}
-                                                <View style={{ paddingLeft: 16, marginTop: 20, width: "50%" }}>
+                                                <View style={{ marginTop: 20, width: "48%" }}>
                                                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 5 }}>
                                                         <TimerOff width={16} />
                                                         <CustomText weight="semiBold" color="#374151">
@@ -737,44 +787,43 @@ const CreateHive = ({ navigation, route }) => {
                                                         </CustomText>
                                                     </View>
 
-                                                    <TouchableOpacity onPress={() => setOpenEndTime(true)}>
-                                                        <TextInput
-                                                            placeholder="Select Time"
-                                                            value={formatTime(endTime)}
-                                                            editable={false}
-                                                            style={styles.input}
-                                                        />
+                                                    <TouchableOpacity
+                                                        onPress={() => setOpenEndTime(true)}
+                                                        activeOpacity={0.7}
+                                                    >
+                                                        <View style={styles.input} pointerEvents="none">
+                                                            <TextInput
+                                                                placeholder="Select Time"
+                                                                value={formatTime(endTime)}
+                                                                editable={false}
+                                                                style={{ color: '#000' }}
+                                                            />
+                                                        </View>
                                                     </TouchableOpacity>
 
                                                     {openEndTime && (
-                                                        Platform.OS === "ios" ? (
-                                                            <View style={{ marginTop: 8, backgroundColor: "#fff", borderRadius: 8 }}>
-                                                                <DateTimePicker
-                                                                    value={endTime}
-                                                                    mode="time"
-                                                                    display="spinner"
-                                                                    onChange={(e, selected) => {
-                                                                        if (e.type === "set") setEndTime(selected);
-                                                                    }}
-                                                                />
-                                                                <TouchableOpacity
-                                                                    onPress={() => setOpenEndTime(false)}
-                                                                    style={{ padding: 10, alignSelf: "flex-end" }}
-                                                                >
-                                                                    <CustomText weight="bold">Done</CustomText>
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                        ) : (
+                                                        <View>
                                                             <DateTimePicker
                                                                 value={endTime}
                                                                 mode="time"
-                                                                display="clock"
-                                                                onChange={(e, selected) => {
-                                                                    setOpenEndTime(false);
-                                                                    if (selected) setEndTime(selected);
-                                                                }}
+                                                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                                                onChange={onEndTimeChange}
                                                             />
-                                                        )
+                                                            {Platform.OS === 'ios' && (
+                                                                <TouchableOpacity
+                                                                    onPress={() => setOpenEndTime(false)}
+                                                                    style={{
+                                                                        padding: 12,
+                                                                        backgroundColor: '#007AFF',
+                                                                        borderRadius: 8,
+                                                                        alignItems: 'center',
+                                                                        marginTop: 8
+                                                                    }}
+                                                                >
+                                                                    <CustomText weight="bold" style={{ color: '#fff' }}>Done</CustomText>
+                                                                </TouchableOpacity>
+                                                            )}
+                                                        </View>
                                                     )}
                                                 </View>
                                             </View>
