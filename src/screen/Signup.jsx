@@ -10,7 +10,8 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 
 // components
@@ -89,169 +90,162 @@ const Signup = ({ navigation }) => {
       });
   };
   return (
-<SafeAreaProvider style={styles.safeArea}>
-  <ScrollView
-    contentContainerStyle={[styles.container, { paddingHorizontal: 20, paddingBottom: 40 }]}
-    showsVerticalScrollIndicator={false}
-  >
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        contentContainerStyle={[styles.container, { paddingHorizontal: 20, paddingBottom: 40 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <Logo />
+        {/* Description */}
+        <CustomText weight='medium' style={[styles.description, { paddingInline: 32 }]}>
+          Automatically share photos taken by members of your group
+        </CustomText>
 
 
-
-      <Logo />
-
-
-      {/* Description */}
-      <CustomText weight='medium' style={[styles.description, { paddingInline: 32 }]}>
-        Automatically share photos taken by members of your group
-      </CustomText>
+        {/* Email or Phone Field */}
+        <View style={{ width: '100%', marginTop: 20 }}>
 
 
-      {/* Email or Phone Field */}
-      <View style={{ width: '100%', marginTop: 20 }}>
-
-
-        <TextInput
-          style={styles.input}
-          value={userID}
-          onChangeText={setUserID}
-          placeholder='Enter your email or phone number'
-          keyboardType='email-address'
-          autoCapitalize='none'
-        />
-      </View>
-
-
-      {/* Password Field */}
-      <View style={{ width: '100%', marginTop: 20 }}>
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          placeholder='Create your password'
-          secureTextEntry={true}
-        />
-      </View>
-
-
-      {/* Continue Button */}
-      <ThemeButton
-        text="Sign up →"
-        onPress={handleContinue}
-        style={{ width: '100%', marginTop: 20 }}
-      />
-
-
-      {/* OR line */}
-      <View style={styles.orLine}>
-        <View style={[styles.line, { width: width * 0.35 }]} />
-        <CustomText weight='medium' style={[styles.text, { fontSize: 16 }]}>Or</CustomText>
-        <View style={[styles.line, { width: width * 0.35 }]} />
-      </View>
-
-
-      {/* Continue with Google */}
-      <TouchableWithoutFeedback>
-        <View style={[styles.outlineBtn, { paddingVertical: height * 0.02 }]}>
-          <View style={styles.iconContainer}>
-            <Igoogle width={width * 0.06} height={width * 0.06} />
-          </View>
-          <CustomText weight='bold'
-            style={[
-              styles.continueTxt,
-              {
-                fontSize: width * 0.03,
-                fontFamily: 'Montserrat-Medium',
-                fontWeight: '500',
-                color: '#000',
-              },
-            ]}
-          >
-            Continue with Google
-          </CustomText>
+          <TextInput
+            style={styles.input}
+            value={userID}
+            onChangeText={setUserID}
+            placeholder='Enter your email or phone number'
+            keyboardType='email-address'
+            autoCapitalize='none'
+          />
         </View>
-      </TouchableWithoutFeedback>
 
-
-      {/* Continue with Apple */}
-      <TouchableWithoutFeedback>
-        <View
-          style={[
-            styles.outlineBtn,
-            {
-              paddingVertical: height * 0.02,
-              backgroundColor: '#000000',
-              marginBottom: 10,
-              borderWidth:1,
-              borderColor: '#000',
-            }
-          ]}
-        >
-          <View style={styles.iconContainer}>
-            <Iapple width={width * 0.06} height={width * 0.06} />
-          </View>
-          <CustomText
-            style={[
-              styles.continueTxt,
-              {
-                fontSize: width * 0.03,
-                fontFamily: 'Montserrat-Medium',
-                fontWeight: '600',
-                color: '#fff', // White text
-              },
-            ]}
-          >
-            Continue with Apple
-          </CustomText>
+        {/* Password Field */}
+        <View style={{ width: '100%', marginTop: 20 }}>
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder='Create your password'
+            secureTextEntry={true}
+          />
         </View>
-      </TouchableWithoutFeedback>
 
 
-      {/* Already a user */}
-      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-        <CustomText weight='medium' style={{}}>Already have an account ? </CustomText>
-        <TouchableWithoutFeedback onPress={() => navigation.navigate('Login')}>
-          <View>
-            <CustomText
-              weight="bold"
-              style={[styles.continueTxt, { fontWeight: '500', color: '#111a94' }]}>
-              Log in
+        {/* Continue Button */}
+        <ThemeButton
+          text="Sign up →"
+          onPress={handleContinue}
+          style={{ width: '100%', marginTop: 20 }}
+        />
+
+
+        {/* OR line */}
+        <View style={styles.orLine}>
+          <View style={[styles.line, { width: width * 0.35 }]} />
+          <CustomText weight='medium' style={[styles.text, { fontSize: 16 }]}>Or</CustomText>
+          <View style={[styles.line, { width: width * 0.35 }]} />
+        </View>
+
+
+        {/* Continue with Google */}
+        <TouchableWithoutFeedback>
+          <View style={[styles.outlineBtn, { paddingVertical: height * 0.02 }]}>
+            <View style={styles.iconContainer}>
+              <Igoogle width={width * 0.06} height={width * 0.06} />
+            </View>
+            <CustomText weight='bold'
+              style={[
+                styles.continueTxt,
+                {
+                  fontSize: width * 0.03,
+                  fontFamily: 'Montserrat-Medium',
+                  fontWeight: '500',
+                  color: '#000',
+                },
+              ]}
+            >
+              Continue with Google
             </CustomText>
           </View>
         </TouchableWithoutFeedback>
-      </View>
 
 
-      {/* Terms & Privacy */}
-
-
-      <CustomText weight='medium' style={[styles.description, { position: 'absolute', bottom: 20, textAlign: 'center', fontSize: 14 }]}>
-        By continuing I accept Selfso's Terms of Use and
-        <TouchableWithoutFeedback onPress={() => setShowPrivacyModal(true)}>
-          <CustomText
-            weight='medium'
+        {/* Continue with Apple */}
+        <TouchableWithoutFeedback>
+          <View
             style={[
-              styles.continueTxt,
+              styles.outlineBtn,
               {
-                fontWeight: '600',
-                textDecorationLine: 'underline',
-                color: '#000',
-              },
+                paddingVertical: height * 0.02,
+                backgroundColor: '#000000',
+                marginBottom: 10,
+                borderWidth: 1,
+                borderColor: '#000',
+              }
             ]}
           >
-            {' '}Privacy Policy
-          </CustomText>
+            <View style={styles.iconContainer}>
+              <Iapple width={width * 0.06} height={width * 0.06} />
+            </View>
+            <CustomText
+              style={[
+                styles.continueTxt,
+                {
+                  fontSize: width * 0.03,
+                  fontFamily: 'Montserrat-Medium',
+                  fontWeight: '600',
+                  color: '#fff', // White text
+                },
+              ]}
+            >
+              Continue with Apple
+            </CustomText>
+          </View>
         </TouchableWithoutFeedback>
-      </CustomText>
-      <PrivacyPolicyModal
-        visible={showPrivacyModal}
-        onClose={() => setShowPrivacyModal(false)}
-      />
-  </ScrollView>
-</SafeAreaProvider>
+
+
+        {/* Already a user */}
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+          <CustomText weight='medium' style={{}}>Already have an account ? </CustomText>
+          <TouchableWithoutFeedback onPress={() => navigation.navigate('Login')}>
+            <View>
+              <CustomText
+                weight="bold"
+                style={[styles.continueTxt, { fontWeight: '500', color: '#111a94' }]}>
+                Log in
+              </CustomText>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+
+
+        {/* Terms & Privacy */}
+
+
+        <CustomText weight='medium' style={[styles.description, { position: 'absolute', bottom: 20, textAlign: 'center', fontSize: 14 }]}>
+          By continuing I accept Selfso's Terms of Use and
+          <TouchableWithoutFeedback onPress={() => setShowPrivacyModal(true)}>
+            <CustomText
+              weight='medium'
+              style={[
+                styles.continueTxt,
+                {
+                  fontWeight: '600',
+                  textDecorationLine: 'underline',
+                  color: '#000',
+                },
+              ]}
+            >
+              {' '}Privacy Policy
+            </CustomText>
+          </TouchableWithoutFeedback>
+        </CustomText>
+        <PrivacyPolicyModal
+          visible={showPrivacyModal}
+          onClose={() => setShowPrivacyModal(false)}
+        />
+      </ScrollView>
+    </SafeAreaView>
 
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -260,57 +254,57 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
-description: {
-  fontSize: rs(14),
-  color: '#646464',
-  textAlign: 'center',
-  width: '100%',
-  marginTop: rvs(10),
-},
+  description: {
+    fontSize: rs(14),
+    color: '#646464',
+    textAlign: 'center',
+    width: '100%',
+    marginTop: rvs(10),
+  },
 
-input: {
-  width: '100%',
-  borderColor: '#ccc',
-  borderWidth: 1,
-  borderRadius: rs(16),
-  paddingHorizontal: rs(20),
-  paddingVertical: rs(18),
-  fontSize: rs(16),
-},
+  input: {
+    width: '100%',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: rs(16),
+    paddingHorizontal: rs(20),
+    paddingVertical: rs(18),
+    fontSize: rs(16),
+  },
 
-outlineBtn: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderWidth: 1,
-  borderRadius: rs(12),
-  width: '100%',
-  marginTop: rvs(20),
-  position: 'relative',
-  paddingVertical: rvs(18),
-},
+  outlineBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: rs(12),
+    width: '100%',
+    marginTop: rvs(20),
+    position: 'relative',
+    paddingVertical: rvs(18),
+  },
 
-iconContainer: {
-  position: 'absolute',
-  left: rs(22),
-},
+  iconContainer: {
+    position: 'absolute',
+    left: rs(22),
+  },
 
   orLine: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-line: {
-  height: 1,
-  backgroundColor: '#ccc',
-  width: width * 0.35,
-},
+  line: {
+    height: 1,
+    backgroundColor: '#ccc',
+    width: width * 0.35,
+  },
 
-text: {
-  marginHorizontal: rs(10),
-  color: '#000',
-  fontSize: rs(16),
-},
+  text: {
+    marginHorizontal: rs(10),
+    color: '#000',
+    fontSize: rs(16),
+  },
 
 });
 
