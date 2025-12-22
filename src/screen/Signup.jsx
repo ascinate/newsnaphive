@@ -7,6 +7,8 @@ import {
   TouchableWithoutFeedback,
   useWindowDimensions,
   Alert,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -20,6 +22,21 @@ import PrivacyPolicyModal from '../components/PrivacyPolicyModal'; //
 // svg
 import Igoogle from "../../assets/Igoogle.svg";
 import Iapple from "../../assets/apple2.svg";
+
+const { width, height } = Dimensions.get("window");
+
+const scale = width / 390;     // iPhone 12 baseline
+const vscale = height / 844;   // vertical baseline
+
+function rs(value) {
+  return Math.round(value * scale);
+}
+function rvs(value) {
+  return Math.round(value * vscale);
+}
+
+
+
 const Signup = ({ navigation }) => {
   const [userID, setUserID] = useState('');
   const [password, setPassword] = useState('');
@@ -72,7 +89,12 @@ const Signup = ({ navigation }) => {
       });
   };
   return (
-    <SafeAreaProvider style={[styles.container, { padding: 20 }]}>
+<SafeAreaProvider style={styles.safeArea}>
+  <ScrollView
+    contentContainerStyle={[styles.container, { paddingHorizontal: 20, paddingBottom: 40 }]}
+    showsVerticalScrollIndicator={false}
+  >
+
 
 
       <Logo />
@@ -224,7 +246,9 @@ const Signup = ({ navigation }) => {
         visible={showPrivacyModal}
         onClose={() => setShowPrivacyModal(false)}
       />
-    </SafeAreaProvider>
+  </ScrollView>
+</SafeAreaProvider>
+
   );
 };
 
@@ -236,50 +260,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
-  description: {
-    fontSize: 16,
-    color: '#646464',
-    textAlign: 'center',
-    width: '100%',
-  },
-  input: {
-    width: '100%',
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 21,
-    fontSize: 16,
-    textAlign: 'left',
-    paddingLeft: 27,
-  },
-  outlineBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-    width: '100%',
-    marginTop: 21,
-    position: 'relative',
-  },
-  iconContainer: {
-    position: 'absolute',
-    left: 22,
-  },
+description: {
+  fontSize: rs(14),
+  color: '#646464',
+  textAlign: 'center',
+  width: '100%',
+  marginTop: rvs(10),
+},
+
+input: {
+  width: '100%',
+  borderColor: '#ccc',
+  borderWidth: 1,
+  borderRadius: rs(16),
+  paddingHorizontal: rs(20),
+  paddingVertical: rs(18),
+  fontSize: rs(16),
+},
+
+outlineBtn: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderWidth: 1,
+  borderRadius: rs(12),
+  width: '100%',
+  marginTop: rvs(20),
+  position: 'relative',
+  paddingVertical: rvs(18),
+},
+
+iconContainer: {
+  position: 'absolute',
+  left: rs(22),
+},
+
   orLine: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  line: {
-    height: 1,
-    backgroundColor: '#ccc',
-  },
-  text: {
-    marginHorizontal: 10,
-    color: '#000',
-  },
+line: {
+  height: 1,
+  backgroundColor: '#ccc',
+  width: width * 0.35,
+},
+
+text: {
+  marginHorizontal: rs(10),
+  color: '#000',
+  fontSize: rs(16),
+},
+
 });
 
 
