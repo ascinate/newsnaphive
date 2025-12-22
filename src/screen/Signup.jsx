@@ -9,8 +9,9 @@ import {
   Alert,
   ScrollView,
   Dimensions,
+  SafeAreaView, // <-- Use RN built-in SafeAreaView
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 
 
@@ -19,15 +20,16 @@ import { registerUser } from "../API/API";
 import CustomText from '../components/CustomText';
 import ThemeButton from '../components/ThemeButton';
 import Logo from '../components/Logo';
-import PrivacyPolicyModal from '../components/PrivacyPolicyModal'; //
+import PrivacyPolicyModal from '../components/PrivacyPolicyModal';
+
 // svg
 import Igoogle from "../../assets/Igoogle.svg";
 import Iapple from "../../assets/apple2.svg";
 
 const { width, height } = Dimensions.get("window");
 
-const scale = width / 390;     // iPhone 12 baseline
-const vscale = height / 844;   // vertical baseline
+const scale = width / 390;
+const vscale = height / 844;
 
 function rs(value) {
   return Math.round(value * scale);
@@ -36,19 +38,14 @@ function rvs(value) {
   return Math.round(value * vscale);
 }
 
-
-
 const Signup = ({ navigation }) => {
   const [userID, setUserID] = useState('');
   const [password, setPassword] = useState('');
   const { width, height } = useWindowDimensions();
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
-
-
   const isValidEmail = (text) => /\S+@\S+\.\S+/.test(text);
   const isValidPhone = (text) => /^[0-9]{10,15}$/.test(text);
-
 
   const handleContinue = () => {
     if (!userID.trim()) {
@@ -56,18 +53,15 @@ const Signup = ({ navigation }) => {
       return;
     }
 
-
     if (!isValidEmail(userID) && !isValidPhone(userID)) {
       Alert.alert("Create account guide", "Please enter a valid email or phone number");
       return;
     }
 
-
     if (!password.trim()) {
       Alert.alert("Create account guide", "Please create a password");
       return;
     }
-
 
     registerUser({
       name: userID.split("@")[0],
@@ -89,6 +83,7 @@ const Signup = ({ navigation }) => {
         Alert.alert("Error", err.response?.data?.message || "Registration failed");
       });
   };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
@@ -96,16 +91,12 @@ const Signup = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <Logo />
-        {/* Description */}
+
         <CustomText weight='medium' style={[styles.description, { paddingInline: 32 }]}>
           Automatically share photos taken by members of your group
         </CustomText>
 
-
-        {/* Email or Phone Field */}
         <View style={{ width: '100%', marginTop: 20 }}>
-
-
           <TextInput
             style={styles.input}
             value={userID}
@@ -116,7 +107,6 @@ const Signup = ({ navigation }) => {
           />
         </View>
 
-        {/* Password Field */}
         <View style={{ width: '100%', marginTop: 20 }}>
           <TextInput
             style={styles.input}
@@ -127,24 +117,18 @@ const Signup = ({ navigation }) => {
           />
         </View>
 
-
-        {/* Continue Button */}
         <ThemeButton
           text="Sign up →"
           onPress={handleContinue}
           style={{ width: '100%', marginTop: 20 }}
         />
 
-
-        {/* OR line */}
         <View style={styles.orLine}>
           <View style={[styles.line, { width: width * 0.35 }]} />
           <CustomText weight='medium' style={[styles.text, { fontSize: 16 }]}>Or</CustomText>
           <View style={[styles.line, { width: width * 0.35 }]} />
         </View>
 
-
-        {/* Continue with Google */}
         <TouchableWithoutFeedback>
           <View style={[styles.outlineBtn, { paddingVertical: height * 0.02 }]}>
             <View style={styles.iconContainer}>
@@ -166,8 +150,6 @@ const Signup = ({ navigation }) => {
           </View>
         </TouchableWithoutFeedback>
 
-
-        {/* Continue with Apple */}
         <TouchableWithoutFeedback>
           <View
             style={[
@@ -191,7 +173,7 @@ const Signup = ({ navigation }) => {
                   fontSize: width * 0.03,
                   fontFamily: 'Montserrat-Medium',
                   fontWeight: '600',
-                  color: '#fff', // White text
+                  color: '#fff',
                 },
               ]}
             >
@@ -200,10 +182,8 @@ const Signup = ({ navigation }) => {
           </View>
         </TouchableWithoutFeedback>
 
-
-        {/* Already a user */}
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-          <CustomText weight='medium' style={{}}>Already have an account ? </CustomText>
+          <CustomText weight='medium'>Already have an account ? </CustomText>
           <TouchableWithoutFeedback onPress={() => navigation.navigate('Login')}>
             <View>
               <CustomText
@@ -214,10 +194,6 @@ const Signup = ({ navigation }) => {
             </View>
           </TouchableWithoutFeedback>
         </View>
-
-
-        {/* Terms & Privacy */}
-
 
         <CustomText weight='medium' style={[styles.description, { position: 'absolute', bottom: 20, textAlign: 'center', fontSize: 14 }]}>
           By continuing I accept Selfso's Terms of Use and
@@ -237,17 +213,22 @@ const Signup = ({ navigation }) => {
             </CustomText>
           </TouchableWithoutFeedback>
         </CustomText>
+
         <PrivacyPolicyModal
           visible={showPrivacyModal}
           onClose={() => setShowPrivacyModal(false)}
         />
       </ScrollView>
     </SafeAreaView>
-
   );
 };
 
+
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff"
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -261,7 +242,6 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: rvs(10),
   },
-
   input: {
     width: '100%',
     borderColor: '#ccc',
@@ -271,7 +251,6 @@ const styles = StyleSheet.create({
     paddingVertical: rs(18),
     fontSize: rs(16),
   },
-
   outlineBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -283,12 +262,10 @@ const styles = StyleSheet.create({
     position: 'relative',
     paddingVertical: rvs(18),
   },
-
   iconContainer: {
     position: 'absolute',
     left: rs(22),
   },
-
   orLine: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -299,14 +276,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     width: width * 0.35,
   },
-
   text: {
     marginHorizontal: rs(10),
     color: '#000',
     fontSize: rs(16),
   },
-
 });
-
 
 export default Signup;
