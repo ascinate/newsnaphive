@@ -11,6 +11,7 @@ import {
   Dimensions,
   SafeAreaView, // <-- Use RN built-in SafeAreaView
 } from 'react-native';
+import { useLoader } from "../context/LoaderContext";
 
 
 
@@ -43,6 +44,7 @@ const Signup = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const { width, height } = useWindowDimensions();
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const { showLoader, hideLoader } = useLoader();
 
   const isValidEmail = (text) => /\S+@\S+\.\S+/.test(text);
   const isValidPhone = (text) => /^[0-9]{10,15}$/.test(text);
@@ -63,26 +65,42 @@ const Signup = ({ navigation }) => {
       return;
     }
 
+    // ✅ SHOW LOADER
+    showLoader();
+
     registerUser({
       name: userID.split("@")[0],
       email: userID,
       password,
     })
       .then((res) => {
+        hideLoader(); // ✅ HIDE LOADER
+
         console.log("Register Response:", res.data);
+
         if (res.data && res.data.message.includes("OTP sent")) {
           Alert.alert("Success", "OTP sent to your email", [
-            { text: "OK", onPress: () => navigation.navigate("OTP", { email: userID }) },
+            {
+              text: "OK",
+              onPress: () =>
+                navigation.navigate("OTP", { email: userID }),
+            },
           ]);
         } else {
           Alert.alert("Error", res.data.message || "Something went wrong");
         }
       })
       .catch((err) => {
+        hideLoader(); // ✅ HIDE LOADER (VERY IMPORTANT)
+
         console.log("Register error:", err.response?.data || err.message);
-        Alert.alert("Error", err.response?.data?.message || "Registration failed");
+        Alert.alert(
+          "Error",
+          err.response?.data?.message || "Registration failed"
+        );
       });
   };
+
 
   return (
     <SafeAreaView style={styles.safeArea}>

@@ -6,11 +6,17 @@ import ThemeButton from '../components/ThemeButton';
 import CustomText from '../components/CustomText';
 import { verifyOtp } from '../API/API';
 import { resendOtp } from '../API/API';
+import { useLoader } from '../context/LoaderContext';
 
 const OTP = ({ navigation, route }) => {
   const { email } = route.params || {};
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputRefs = useRef([]);
+const { showLoader, hideLoader } = useLoader();
+
+
+
+
 
   const handleChange = (text, index) => {
     const newOtp = [...otp];
@@ -19,31 +25,41 @@ const OTP = ({ navigation, route }) => {
 
     if (text && index < 3) inputRefs.current[index + 1].focus();
   };
+const handleVerify = async () => {
+  const finalOtp = otp.join('');
 
-  const handleVerify = async () => {
-    const finalOtp = otp.join('');
-    if (finalOtp.length < 4) {
-      Alert.alert('Invalid', 'Please enter the complete 4-digit OTP');
-      return;
-    }
+  if (finalOtp.length < 4) {
+    Alert.alert('Invalid', 'Please enter the complete 4-digit OTP');
+    return;
+  }
 
-    try {
-      const res = await verifyOtp({ email, otp: finalOtp });
-      console.log("OTP Verify Response:", res.data);
-      if (res?.data?.message) {
-        await AsyncStorage.setItem('token', res.data.token);
-        await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
-        Alert.alert('Success', res.data.message, [
-          { text: 'OK', onPress: () => navigation.navigate('MyTabs') },
-        ]);
-      } else {
-        Alert.alert('Error', 'Unexpected response from server');
-      }
-    } catch (err) {
-      console.log('OTP Verify Error:', err.response?.data || err.message);
-      Alert.alert('Error', err.response?.data?.message || 'Something went wrong');
+  showLoader(); // ✅ SHOW LOADER
+
+  try {
+    const res = await verifyOtp({ email, otp: finalOtp });
+    console.log("OTP Verify Response:", res.data);
+
+    if (res?.data?.message) {
+      await AsyncStorage.setItem('token', res.data.token);
+      await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
+
+      hideLoader(); // ✅ HIDE LOADER
+
+      Alert.alert('Success', res.data.message, [
+        { text: 'OK', onPress: () => navigation.navigate('MyTabs') },
+      ]);
+    } else {
+      hideLoader();
+      Alert.alert('Error', 'Unexpected response from server');
     }
-  };
+  } catch (err) {
+    hideLoader(); // ✅ VERY IMPORTANT
+
+    console.log('OTP Verify Error:', err.response?.data || err.message);
+    Alert.alert('Error', err.response?.data?.message || 'Something went wrong');
+  }
+};
+
 
   return (
     <SafeAreaProvider style={styles.container}>
