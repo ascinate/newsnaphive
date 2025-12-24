@@ -17,7 +17,7 @@ import {
   MessageCircle,
   Heart,
 } from "lucide-react-native";
-
+import Toast from "react-native-toast-message";
 // SVGs
 import Pencil from "../../assets/svg/pencil.svg";
 
@@ -37,10 +37,8 @@ const EditScreen = ({ navigation, }) => {
   const [email, setEmail] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const [loading, setLoading] = useState(false);
-
-
-
   // Load user info from AsyncStorage
+
   useEffect(() => {
     (async () => {
       const userData = await AsyncStorage.getItem("user");
@@ -65,9 +63,14 @@ const EditScreen = ({ navigation, }) => {
     launchImageLibrary(options, (response) => {
       if (response.didCancel) return;
       if (response.errorMessage) {
-        Alert.alert("Error", response.errorMessage);
+        Toast.show({
+          type: "error",
+          text1: "Image Picker Error",
+          text2: response.errorMessage,
+        });
         return;
       }
+
 
       const uri = response.assets && response.assets[0]?.uri;
       if (uri) {
@@ -79,7 +82,11 @@ const EditScreen = ({ navigation, }) => {
   const handleSave = async () => {
     try {
       if (!firstName && !lastName && !email && !profileImage) {
-        Alert.alert("Error", "Please fill at least one field or change image");
+        Toast.show({
+          type: "info",
+          text1: "Nothing to Update",
+          text2: "Please update at least one field or change image",
+        });
         return;
       }
 
@@ -87,9 +94,14 @@ const EditScreen = ({ navigation, }) => {
 
       const token = await AsyncStorage.getItem("token");
       if (!token) {
-        Alert.alert("Error", "User not logged in");
+        Toast.show({
+          type: "error",
+          text1: "Session Expired",
+          text2: "Please login again",
+        });
         return;
       }
+
 
       const name = `${firstName} ${lastName}`.trim();
 
@@ -111,22 +123,32 @@ const EditScreen = ({ navigation, }) => {
       console.log("ProfileImage:", profileImage);
 
       const response = await updateProfile(formData, token);
-      console.log("✅ Profile Updated Response:", response.data);
+      console.log(" Profile Updated Response:", response.data);
 
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
 
-      Alert.alert("Success", response.data.message);
+      Toast.show({
+        type: "success",
+        text1: "Profile Updated",
+        text2: response.data.message || "Your profile was updated successfully",
+      });
+
+      setTimeout(() => {
+        navigation.navigate("MyTabs");
+      }, 500);
+
       navigation.navigate("MyTabs");
     } catch (error) {
       console.log("❌ Error updating profile:", error);
       console.log("Response:", error.response);
       console.log("Response Data:", error.response?.data);
       console.log("Message:", error.response?.data?.message);
+      Toast.show({
+        type: "error",
+        text1: "Update Failed",
+        text2: error.response?.data?.message || "Failed to update profile",
+      });
 
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to update profile"
-      );
     } finally {
       setLoading(false);
     }
