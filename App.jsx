@@ -8,8 +8,8 @@ import { EventProvider } from "./src/context/EventContext";
 import { LoaderProvider } from "./src/context/LoaderContext";
 import i18n from "./src/i18n";
 import { I18nextProvider } from "react-i18next";
-
-
+import Toast from "react-native-toast-message";
+import SnaphiveToast from "./src/components/SnaphiveToast";
 
 // Screens
 import Landing from "./src/screen/Landing";
@@ -144,6 +144,7 @@ const App = () => {
           </EventProvider>
         </NotificationProvider>
       </LoaderProvider>
+<Toast config={SnaphiveToast} />
     </SafeAreaProvider>
 
   );

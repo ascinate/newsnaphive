@@ -12,6 +12,7 @@ import {
   SafeAreaView, // <-- Use RN built-in SafeAreaView
 } from 'react-native';
 import { useLoader } from "../context/LoaderContext";
+import AppModal from "../components/AppModal";
 
 
 
@@ -49,19 +50,47 @@ const Signup = ({ navigation }) => {
   const isValidEmail = (text) => /\S+@\S+\.\S+/.test(text);
   const isValidPhone = (text) => /^[0-9]{10,15}$/.test(text);
 
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalData, setModalData] = useState({
+    title: "",
+    message: "",
+    type: "info",
+  });
+  const showModal = ({ title, message, type = "info" }) => {
+    setModalData({ title, message, type });
+    setModalVisible(true);
+  };
+
+
   const handleContinue = () => {
     if (!userID.trim()) {
-      Alert.alert("Create account guide", "Please enter your email or phone number");
+      showModal({
+        title: "Create Account",
+        message: "Please enter your email or phone number",
+        type: "warning",
+      });
+
       return;
     }
 
     if (!isValidEmail(userID) && !isValidPhone(userID)) {
-      Alert.alert("Create account guide", "Please enter a valid email or phone number");
+      showModal({
+        title: "Invalid Input",
+        message: "Please enter a valid email or phone number",
+        type: "error",
+      });
+
       return;
     }
 
     if (!password.trim()) {
-      Alert.alert("Create account guide", "Please create a password");
+      showModal({
+        title: "Password Required",
+        message: "Please create a password",
+        type: "warning",
+      });
+
       return;
     }
 
@@ -79,25 +108,35 @@ const Signup = ({ navigation }) => {
         console.log("Register Response:", res.data);
 
         if (res.data && res.data.message.includes("OTP sent")) {
-          Alert.alert("Success", "OTP sent to your email", [
-            {
-              text: "OK",
-              onPress: () =>
-                navigation.navigate("OTP", { email: userID }),
-            },
-          ]);
+          showModal({
+            title: "OTP Sent",
+            message: "We’ve sent a verification code to your email",
+            type: "success",
+          });
+
+          setTimeout(() => {
+            navigation.navigate("OTP", { email: userID });
+          }, 1200);
+
         } else {
-          Alert.alert("Error", res.data.message || "Something went wrong");
+showModal({
+  title: "Signup Failed",
+  message: res.data.message || "Something went wrong",
+  type: "error",
+});
+
         }
       })
       .catch((err) => {
         hideLoader(); // ✅ HIDE LOADER (VERY IMPORTANT)
 
         console.log("Register error:", err.response?.data || err.message);
-        Alert.alert(
-          "Error",
-          err.response?.data?.message || "Registration failed"
-        );
+       showModal({
+  title: "Registration Failed",
+  message: err.response?.data?.message || "Registration failed",
+  type: "error",
+});
+
       });
   };
 
@@ -237,6 +276,15 @@ const Signup = ({ navigation }) => {
           onClose={() => setShowPrivacyModal(false)}
         />
       </ScrollView>
+
+      <AppModal
+  visible={modalVisible}
+  title={modalData.title}
+  message={modalData.message}
+  type={modalData.type}
+  onClose={() => setModalVisible(false)}
+/>
+
     </SafeAreaView>
   );
 };

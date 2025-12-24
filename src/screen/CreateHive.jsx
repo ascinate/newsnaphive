@@ -15,6 +15,8 @@ import CustomText from '../components/CustomText';
 import ThemeButton from '../components/ThemeButton';
 import { colors } from '../Theme/theme';
 import PrivacyPolicyModal from '../components/PrivacyPolicyModal';
+import Toast from "react-native-toast-message";
+import AppModal from "../components/AppModal";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -48,6 +50,38 @@ const CreateHive = ({ navigation, route }) => {
     const [openStartTime, setOpenStartTime] = useState(false);
     const [openEndTime, setOpenEndTime] = useState(false);
     const [openEndDate, setOpenEndDate] = useState(false);
+
+
+
+    useEffect(() => {
+        if (route?.params?.showCreateToast) {
+            Toast.show({
+                type: "success",
+                text1: "Hive Created 🎉",
+                text2: "Start sharing memories now",
+            });
+
+            // 🔥 clear param so it doesn't show again
+            navigation.setParams({ showCreateToast: false });
+        }
+    }, [route?.params?.showCreateToast]);
+
+
+
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalData, setModalData] = useState({
+        title: "",
+        message: "",
+        type: "info",
+    });
+
+    const showModal = ({ title, message, type = "info" }) => {
+        setModalData({ title, message, type });
+        setModalVisible(true);
+    };
+
+
     // Format date → DD/MM/YYYY
     const formatDate = (date) => {
         const day = String(date.getDate()).padStart(2, '0');
@@ -118,7 +152,12 @@ const CreateHive = ({ navigation, route }) => {
     const handleCreateHive = async () => {
         try {
             if (isCreateDisabled) {
-                alert("Please complete all required fields (Hive name, cover image, privacy policy)");
+                Toast.show({
+                    type: "info",
+                    text1: "Incomplete Form",
+                    text2: "Please fill all required fields",
+                });
+
                 return;
             }
 
@@ -198,20 +237,42 @@ const CreateHive = ({ navigation, route }) => {
             console.log("Create Hive result:", result);
 
             if (!response.ok) {
-                alert(result.message || "Error creating hive");
+                Toast.show({
+                    type: "error",
+                    text1: "Creation Failed",
+                    text2: result.message || "Unable to create hive",
+                });
+
                 return;
             }
-
-            alert("Hive created successfully!");
-
-            navigation.reset({
-                index: 0,
-                routes: [{ name: "Home" }],
+            Toast.show({
+                type: "success",
+                text1: "Hive Created 🎉",
+                text2: "Start sharing memories now",
             });
+
+            setTimeout(() => {
+                navigation.reset({
+                    index: 0,
+                    routes: [
+                        {
+                            name: "Home",
+                            params: { showCreateToast: true },
+                        },
+                    ],
+                });
+            }, 300);
+
+
 
         } catch (error) {
             console.log("Create Hive Error:", error);
-            alert("Something went wrong!");
+            Toast.show({
+                type: "error",
+                text1: "Error ❌",
+                text2: "Something went wrong. Try again",
+            });
+
         } finally {
             hideLoader();
         }
@@ -393,7 +454,12 @@ const CreateHive = ({ navigation, route }) => {
                                         console.log("PICKED FILE INFO:", selectedImage);
 
                                         if (selectedImage.fileSize && selectedImage.fileSize > 1 * 1024 * 1024) {
-                                            alert("This image is larger than 1MB. Please choose a smaller file.");
+                                            showModal({
+                                                title: "Image too large",
+                                                message: "Please choose an image smaller than 1MB.",
+                                                type: "warning",
+                                            });
+
                                             return;
                                         }
 
@@ -972,6 +1038,14 @@ const CreateHive = ({ navigation, route }) => {
                         onClose={() => setShowPrivacyModal(false)}
                     />
                 </ScrollView>
+                <AppModal
+  visible={modalVisible}
+  title={modalData.title}
+  message={modalData.message}
+  type={modalData.type}
+  onClose={() => setModalVisible(false)}
+/>
+
             </SafeAreaView>
         </SafeAreaProvider>
     );

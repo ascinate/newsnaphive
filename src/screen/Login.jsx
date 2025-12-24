@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { loginUser } from "../API/API";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLoader } from "../context/LoaderContext";
+import AppModal from "../components/AppModal";
 
 import Logo from '../components/Logo';
 import ThemeButton from '../components/ThemeButton';
@@ -37,22 +38,51 @@ const Login = ({ navigation }) => {
     const [loading, setLoading] = useState(false);
 
     const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalData, setModalData] = useState({
+        title: "",
+        message: "",
+        type: "info",
+    });
+    const showModal = ({ title, message, type = "info" }) => {
+        setModalData({ title, message, type });
+        setModalVisible(true);
+    };
+
+
+
     const isValidEmail = (text) => /\S+@\S+\.\S+/.test(text);
     const isValidPhone = (text) => /^[0-9]{10,15}$/.test(text);
 
     const handleContinue = async () => {
         if (!userID.trim()) {
-            Alert.alert("Error", "Please enter your email or phone number");
+            showModal({
+                title: "Missing Information",
+                message: "Please enter your email or phone number",
+                type: "warning",
+            });
+
             return;
         }
 
         if (!isValidEmail(userID) && !isValidPhone(userID)) {
-            Alert.alert("Error", "Invalid email or phone number");
+            showModal({
+                title: "Invalid Input",
+                message: "Please enter a valid email or phone number",
+                type: "error",
+            });
+
             return;
         }
 
         if (!password.trim()) {
-            Alert.alert("Error", "Please enter your password");
+            showModal({
+                title: "Password Required",
+                message: "Please enter your password",
+                type: "warning",
+            });
+
             return;
         }
 
@@ -70,10 +100,20 @@ const Login = ({ navigation }) => {
 
                 navigation.replace("MyTabs");
             } else {
-                Alert.alert("Error", "Invalid response from server");
+                showModal({
+                    title: "Server Error",
+                    message: "Invalid response from server",
+                    type: "error",
+                });
+
             }
         } catch (err) {
-            Alert.alert("Error", err.response?.data?.message || "Login failed");
+            showModal({
+                title: "Login Failed",
+                message: err.response?.data?.message || "Login failed",
+                type: "error",
+            });
+
         } finally {
             hideLoader(); // Hide Global Loader
         }
@@ -202,6 +242,15 @@ const Login = ({ navigation }) => {
                 </View>
 
             </ScrollView>
+
+            <AppModal
+                visible={modalVisible}
+                title={modalData.title}
+                message={modalData.message}
+                type={modalData.type}
+                onClose={() => setModalVisible(false)}
+            />
+
         </SafeAreaProvider>
 
     );
