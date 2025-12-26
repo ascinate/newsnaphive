@@ -60,7 +60,6 @@ const picnic1 = require("../../assets/picnic1.jpg");
 
 const FolderLayout = ({ navigation, route }) => {
 
-
   const {
     image,
     folderName,
@@ -214,7 +213,7 @@ const FolderLayout = ({ navigation, route }) => {
       if (response.didCancel || response.errorCode) return;
       if (!response.assets || response.assets.length === 0) return;
 
-      showLoader(); // 🔥 Show loader before starting upload
+      showLoader(); //  Show loader before starting upload
 
       try {
         const token = await AsyncStorage.getItem("token");
@@ -275,7 +274,7 @@ const FolderLayout = ({ navigation, route }) => {
           Alert.alert("Upload Failed", "Network error.");
         }
       } finally {
-        hideLoader(); // 🔥 Always hide loader at the end
+        hideLoader(); //  Always hide loader at the end
       }
     });
   };
@@ -363,13 +362,6 @@ const FolderLayout = ({ navigation, route }) => {
 
     setAiMessages((prev) => [...prev, userImg, aiImg]);
   };
-
-
-
-
-
-
-
 
   return (
     <ScreenLayout

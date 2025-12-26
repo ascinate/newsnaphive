@@ -1,4 +1,4 @@
-import { View, ScrollView, Image, StyleSheet, TouchableOpacity, TextInput, Dimensions } from 'react-native'; 
+import { View, ScrollView, Image, StyleSheet, TouchableOpacity, TextInput, Dimensions, KeyboardAvoidingView, Platform, Keyboard } from 'react-native'; 
 import React, { useEffect, useState, useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -92,78 +92,94 @@ const Chat = ({ route, navigation }) => {
     );
 
     setText("");
+    Keyboard.dismiss();
   };
 
   if (!loggedUser) return null;
 
   return (
     <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: width * 0.025 }} >
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <ArrowLeft size={width * 0.06} />
+            </TouchableOpacity>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: width * 0.025 }} >
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft size={width * 0.06} />
-          </TouchableOpacity>
-
-          <View style={styles.profileContainer}>
-            <View style={styles.displayPictureContainer}>
-              <Image source={dp} style={styles.displayPicture} />
-            </View>
-            <View>
-              <CustomText weight="bold" style={styles.userName}>{user.email}</CustomText>
-              <CustomText weight="medium" style={{ fontSize: width * 0.03, color: '#00A236' }}>Online</CustomText>
+            <View style={styles.profileContainer}>
+              <View style={styles.displayPictureContainer}>
+                <Image source={dp} style={styles.displayPicture} />
+              </View>
+              <View>
+                <CustomText weight="bold" style={styles.userName}>{user.email}</CustomText>
+                <CustomText weight="medium" style={{ fontSize: width * 0.03, color: '#00A236' }}>Online</CustomText>
+              </View>
             </View>
           </View>
+          <Ellipsis size={width * 0.06} />
         </View>
-        <Ellipsis size={width * 0.06} />
-      </View>
 
-      {/* Messages */}
-      <ScrollView ref={scrollRef} contentContainerStyle={{ paddingHorizontal: width * 0.0625 }}>
-        <View style={styles.messagesContainer}>
+        {/* Messages */}
+        <ScrollView 
+          ref={scrollRef} 
+          contentContainerStyle={{ paddingHorizontal: width * 0.0625, flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.messagesContainer}>
 
-          {messages.map((msg) => {
-            const isMe = msg.senderId === loggedUser.id;
+            {messages.map((msg) => {
+              const isMe = msg.senderId === loggedUser.id;
 
-            return (
-              <View
-                key={msg.id}
-                style={isMe ? styles.userTwoMessageBox : styles.userOneMessageBox}
-              >
-                <View style={isMe ? styles.messageText : styles.messageTextLeft}>
-                  <CustomText weight="medium" style={{ fontSize: width * 0.033 }}>
-                    {msg.text}
+              return (
+                <View
+                  key={msg.id}
+                  style={isMe ? styles.userTwoMessageBox : styles.userOneMessageBox}
+                >
+                  <View style={isMe ? styles.messageText : styles.messageTextLeft}>
+                    <CustomText weight="medium" style={{ fontSize: width * 0.033 }}>
+                      {msg.text}
+                    </CustomText>
+
+                    <View style={isMe ? styles.messageArrowRight : styles.messageArrowLeft} />
+                  </View>
+
+                  <CustomText weight="medium" style={{ fontSize: width * 0.025 }}>
+                    {msg.createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </CustomText>
-
-                  <View style={isMe ? styles.messageArrowRight : styles.messageArrowLeft} />
                 </View>
+              );
+            })}
 
-                <CustomText weight="medium" style={{ fontSize: width * 0.025 }}>
-                  {msg.createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </CustomText>
-              </View>
-            );
-          })}
+          </View>
+        </ScrollView>
 
+        {/* Input Bar */}
+        <View style={styles.inputBar}>
+          <TextInput
+            style={styles.inputType}
+            placeholder="Type here.."
+            placeholderTextColor="#AAAAAA"
+            value={text}
+            onChangeText={setText}
+            multiline={false}
+            returnKeyType="send"
+            onSubmitEditing={sendMessage}
+            blurOnSubmit={false}
+            autoCapitalize="sentences"
+            autoCorrect={true}
+          />
+
+          <TouchableOpacity onPress={sendMessage} style={styles.sendBtn}>
+            <SendHorizonal size={width * 0.06} color="#ffffff" />
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-
-      {/* Input Bar */}
-      <View style={styles.inputBar}>
-        <TextInput
-          style={styles.inputType}
-          placeholder="Type here.."
-          placeholderTextColor="#AAAAAA"
-          value={text}
-          onChangeText={setText}
-        />
-
-        <TouchableOpacity onPress={sendMessage} style={styles.sendBtn}>
-          <SendHorizonal size={width * 0.06} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -181,6 +197,7 @@ const styles = StyleSheet.create({
     paddingVertical: height * 0.02,
     paddingHorizontal: width * 0.0625,
     marginBottom: height * 0.01,
+    backgroundColor: "#FAFAF9",
   },
 
   profileContainer: { flexDirection: "row", alignItems: "center", gap: width * 0.025 },
@@ -196,7 +213,7 @@ const styles = StyleSheet.create({
 
   userName: { fontSize: width * 0.04, fontWeight: "600", color: "#000" },
 
-  messagesContainer: { paddingTop: height * 0.01 },
+  messagesContainer: { paddingTop: height * 0.01, paddingBottom: height * 0.02 },
 
   userOneMessageBox: {
     flexDirection: "row",
@@ -218,6 +235,7 @@ const styles = StyleSheet.create({
     paddingVertical: height * 0.013,
     paddingHorizontal: width * 0.07,
     maxWidth: width * 0.65,
+    position: "relative",
   },
 
   messageTextLeft: {
@@ -226,6 +244,7 @@ const styles = StyleSheet.create({
     paddingVertical: height * 0.013,
     paddingHorizontal: width * 0.07,
     maxWidth: width * 0.65,
+    position: "relative",
   },
 
   messageArrowRight: {
@@ -252,14 +271,15 @@ const styles = StyleSheet.create({
     borderRightColor: "#fff",
   },
 
-  // ✅ FIXED INPUT BAR
   inputBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: height * 0.02,
+    paddingVertical: height * 0.015,
     paddingHorizontal: width * 0.05,
     backgroundColor: "#FAFAF9",
+    borderTopWidth: 1,
+    borderTopColor: "#E5E5E5",
   },
 
   inputType: {
@@ -267,12 +287,14 @@ const styles = StyleSheet.create({
     borderColor: "#D9D9D9",
     borderRadius: 50,
     paddingLeft: width * 0.05,
+    paddingRight: width * 0.03,
     width: width * 0.70,
     height: width * 0.11,
     backgroundColor: "#fff",
+    fontSize: width * 0.04,
+    color: "#000",
   },
 
-  // ✅ FIXED SEND BUTTON
   sendBtn: {
     width: width * 0.13,
     height: width * 0.13,

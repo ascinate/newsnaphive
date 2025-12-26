@@ -42,47 +42,47 @@ const InviteMember = ({ navigation, route }) => {
   // -------------------------------
   // USE EFFECT FOR INVITATION API
   // -------------------------------
-useEffect(() => {
-  if (!triggerInvite) return;
+  useEffect(() => {
+    if (!triggerInvite) return;
 
-  const inviteMember = async () => {
-    showLoader(); // 🔥 START LOADER
+    const inviteMember = async () => {
+      showLoader(); // 🔥 START LOADER
 
-    try {
-      const token = await AsyncStorage.getItem("token");
+      try {
+        const token = await AsyncStorage.getItem("token");
 
-      if (!token) {
-        alert("No token found. Please log in again.");
-        return;
-      }
-
-      console.log("Sending invite to:", email);
-      console.log("Hive ID:", hiveId);
-
-      const response = await axios.post(
-        `https://snaphive-node.vercel.app/api/hives/${hiveId}/invite`,
-        { email },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        if (!token) {
+          alert("No token found. Please log in again.");
+          return;
         }
-      );
 
-      console.log("Invite Response:", response.data);
-      alert("Invitation sent successfully!");
-      setEmail(""); // optional UX improvement
-    } catch (error) {
-      console.log("Invite Error:", error.response?.data || error);
-      alert(error.response?.data?.message || "Failed to send invitation.");
-    } finally {
-      hideLoader();       // 🔥 STOP LOADER (always runs)
-      setTriggerInvite(false);
-    }
-  };
+        console.log("Sending invite to:", email);
+        console.log("Hive ID:", hiveId);
 
-  inviteMember();
-}, [triggerInvite]);
+        const response = await axios.post(
+          `https://snaphive-node.vercel.app/api/hives/${hiveId}/invite`,
+          { email },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("Invite Response:", response.data);
+        alert("Invitation sent successfully!");
+        setEmail(""); // optional UX improvement
+      } catch (error) {
+        console.log("Invite Error:", error.response?.data || error);
+        alert(error.response?.data?.message || "Failed to send invitation.");
+      } finally {
+        hideLoader();       // 🔥 STOP LOADER (always runs)
+        setTriggerInvite(false);
+      }
+    };
+
+    inviteMember();
+  }, [triggerInvite]);
 
 
   // -------------------------------
@@ -118,7 +118,7 @@ useEffect(() => {
         </View>
       }
     >
-      <ScrollView style={{ paddingHorizontal: 24, paddingTop: 30, backgroundColor: "#FAFAF9", paddingBottom: 40 }}>
+      <ScrollView style={{ paddingHorizontal: 24, paddingTop: 30, backgroundColor: "#FAFAF9", paddingBottom: 100 }}>
 
         {/* Info Card */}
         <View style={styles.infoCard}>
@@ -129,6 +129,48 @@ useEffect(() => {
             Invite members to collaborate and share photos in this hive
           </CustomText>
         </View>
+
+
+
+        {/* Email Input */}
+        <View>
+          <CustomText weight="bold" style={styles.emailLabel}>
+            Email Address
+          </CustomText>
+
+          <View style={styles.inputWrapper}>
+            <Mail width={20} height={20} color="#9CA3AF" />
+            <TextInput
+              style={styles.inviteMember}
+              placeholder="example@gmail.com"
+              placeholderTextColor="#9CA3AF"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+        </View>
+
+        {/* Button */}
+        <View style={styles.buttonRow}>
+          <ThemeButton text="Send Invitation" onPress={sendInvite} style={{ width: "100%", margin: 0 }} />
+        </View>
+
+
+
+
+        {/* Divider */}
+        <View style={styles.orLine}>
+          <View style={styles.line} />
+          <CustomText weight="medium" style={styles.orText}>
+            Or invite via email
+          </CustomText>
+          <View style={styles.line} />
+        </View>
+
+
+        <View style={{ height: 40 }} />
 
         {/* Invitation Code */}
         <View style={styles.section}>
@@ -189,41 +231,7 @@ useEffect(() => {
           </View>
         </View>
 
-        {/* Divider */}
-        <View style={styles.orLine}>
-          <View style={styles.line} />
-          <CustomText weight="medium" style={styles.orText}>
-            Or invite via email
-          </CustomText>
-          <View style={styles.line} />
-        </View>
 
-        {/* Email Input */}
-        <View style={styles.emailSection}>
-          <CustomText weight="bold" style={styles.emailLabel}>
-            Email Address
-          </CustomText>
-
-          <View style={styles.inputWrapper}>
-            <Mail width={20} height={20} color="#9CA3AF" />
-            <TextInput
-              style={styles.inviteMember}
-              placeholder="example@gmail.com"
-              placeholderTextColor="#9CA3AF"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
-        </View>
-
-        {/* Button */}
-        <View style={styles.buttonRow}>
-          <ThemeButton text="Send Invitation" onPress={sendInvite} style={{ width: "100%", margin: 0 }} />
-        </View>
-
-        <View style={{ height: 40 }} />
       </ScrollView>
 
       <QRCodeModal visible={modalVisible} onClose={() => setModalVisible(false)} />
@@ -415,7 +423,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 28,
   },
 
   line: {
@@ -430,9 +437,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 
-  emailSection: {
-    marginBottom: 24,
-  },
 
   emailLabel: {
     fontSize: 15,
