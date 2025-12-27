@@ -33,6 +33,7 @@ import { ImageBackground } from "react-native";
 import TopNav from '../components/TopNavbar';
 import CustomText from '../components/CustomText';
 import { useTranslation } from 'react-i18next';
+import SearchBar from '../components/SearchBar';
 // assets
 const picnic1 = require('../../assets/picnic1.jpg');
 
@@ -61,7 +62,7 @@ const MyHives = ({ navigation, route }) => {
                             {t('allSharedMemories')}
                         </CustomText>
                         <View style={{ position: 'relative', justifyContent: 'center' }}>
-                            <Search
+                            {/* <Search
                                 size={18}
                                 color="#9CA3AF"
                                 style={{
@@ -71,12 +72,14 @@ const MyHives = ({ navigation, route }) => {
 
                                     zIndex: 10,
                                 }}
-                            />
-                            <TextInput
+                                
+                            /> */}
+                            {/* <TextInput
                                 style={[styles.searchInput, { paddingLeft: 38 }]}
                                 placeholder={t('searchHive')}
                                 placeholderTextColor="#9CA3AF"
-                            />
+                                /> */}
+                                <SearchBar />
 
                         </View>
                     </View>

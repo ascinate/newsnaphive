@@ -799,7 +799,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: width * 0.05,
     paddingBottom: height * 0.10,
-    backgroundColor: "#FAFAF9",
+    // backgroundColor: "#FAFAF9",
   },
 
   textBox: {
