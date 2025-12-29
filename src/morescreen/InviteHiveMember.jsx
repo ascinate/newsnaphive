@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ScrollView } from "react-native";
-import FolderLayout from "./FolderLayout";
+import FolderLayout from "../screen/FolderLayout";
 import Swtich from "../components/Swtich";
 import QR from "../../assets/svg/qr.svg";
 import Pencil from "../../assets/svg/pencil.svg";

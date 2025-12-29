@@ -24,42 +24,46 @@ const ScreenLayout = ({
 }) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <ScrollView>
 
-      <View style={styles.imageWrapper}>
-        {/* Background Image */}
-        <Image source={image} style={styles.folderImage} />
 
-        {/* Header Bar */}
-        <View style={styles.topBar}>
-          <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
-            <View style={styles.iconButton}>
-              <Back height={16} width={16} />
-            </View>
-          </TouchableWithoutFeedback>
 
-          {RightIcon && (
-            <TouchableWithoutFeedback onPress={() => console.log("Right icon pressed")}>
-              <View style={styles.iconButton}>{RightIcon}</View>
+        <View style={styles.imageWrapper}>
+          {/* Background Image */}
+          <Image source={image} style={styles.folderImage} />
+
+          {/* Header Bar */}
+          <View style={styles.topBar}>
+            <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
+              <View style={styles.iconButton}>
+                <Back height={16} width={16} />
+              </View>
             </TouchableWithoutFeedback>
-          )}
-        </View>
-        {showOverlay && (
-          <View style={styles.bottomOverlay}>
-            {OverlayContent ? (
-              OverlayContent
-            ) : (
-              <>
-                <View>
-                  <Text style={styles.folderHeading}>{folderName}</Text>
-                  <Text style={styles.folderHeadingDate}>{date}</Text>
-                </View>
-              </>
+
+            {RightIcon && (
+              <TouchableWithoutFeedback onPress={() => console.log("Right icon pressed")}>
+                <View style={styles.iconButton}>{RightIcon}</View>
+              </TouchableWithoutFeedback>
             )}
           </View>
-        )}
-      </View>
-      {/* Main Content */}
-      <ScrollView style={styles.container}>{children}</ScrollView>
+          {showOverlay && (
+            <View style={styles.bottomOverlay}>
+              {OverlayContent ? (
+                OverlayContent
+              ) : (
+                <>
+                  <View>
+                    <Text style={styles.folderHeading}>{folderName}</Text>
+                    <Text style={styles.folderHeadingDate}>{date}</Text>
+                  </View>
+                </>
+              )}
+            </View>
+          )}
+        </View>
+        {/* Main Content */}
+        <View style={styles.container}>{children}</View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

@@ -8,7 +8,7 @@ import QR from "../../assets/svg/qr.svg";
 import Play from "../../assets/svg/play.svg";
 
 // components
-import FolderLayout from "./FolderLayout";
+import FolderLayout from "../screen/FolderLayout";
 import ThemeButton from "../components/ThemeButton";
 import { EventContext } from "../context/EventContext";
 

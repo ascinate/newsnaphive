@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import FolderLayout from "./FolderLayout";
+import FolderLayout from "../screen/FolderLayout";
 import Cloud from "../../assets/svg/cloud.svg";
 import QR from "../../assets/svg/qr.svg";
 import Utility from "../../assets/svg/utility.svg";

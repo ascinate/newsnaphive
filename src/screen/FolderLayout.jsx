@@ -448,7 +448,7 @@ const FolderLayout = ({ navigation, route }) => {
               </TouchableOpacity>
 
 
-              <View style={{ height: 1, backgroundColor: '#E5E7EB' }} />
+              {/* <View style={{ height: 1, backgroundColor: '#E5E7EB' }} />
 
               <TouchableOpacity
                 onPress={() => {
@@ -470,7 +470,7 @@ const FolderLayout = ({ navigation, route }) => {
                 style={{ paddingVertical: height * 0.015, paddingHorizontal: width * 0.04 }}
               >
                 <CustomText weight="medium">{t('status')}</CustomText>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           )}
         </View>
@@ -839,7 +839,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: width * 0.015,
-    paddingHorizontal: width * 0.055,
+    paddingHorizontal: width * 0.053,
     paddingVertical: height * 0.0075,
     borderWidth: 1,
     borderColor: '#D0CACA',
@@ -875,6 +875,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: height * 0.0125,
     alignItems: 'center',
+
   },
 
   imageWrapperRow: {

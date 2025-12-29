@@ -1,4 +1,4 @@
-import { View, ScrollView, Image, StyleSheet, TouchableOpacity, TextInput, Dimensions, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, ScrollView, Image, StyleSheet, TouchableOpacity, TextInput, Dimensions, KeyboardAvoidingView, Platform, Keyboard } from 'react-native'; 
 import React, { useEffect, useState, useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -23,14 +23,10 @@ const dp = require("../../assets/dp.jpg");
 
 const Chat = ({ route, navigation }) => {
 
-  const { user } = route.params;
+  const { user } = route.params; 
   const [loggedUser, setLoggedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
-
-  const [isTyping, setIsTyping] = useState(false);
-  const [otherUserTyping, setOtherUserTyping] = useState(false);
-
 
   const scrollRef = useRef();
 
@@ -72,42 +68,10 @@ const Chat = ({ route, navigation }) => {
     return unsub;
   }, [loggedUser]);
 
-  const updateTypingStatus = async (typing) => {
-    if (!loggedUser) return;
-
-    const chatId = generateChatId(loggedUser.id, user._id);
-
-    await setDoc(
-      doc(db, "chats", chatId),
-      {
-        typing: {
-          [loggedUser.id]: typing
-        }
-      },
-      { merge: true }
-    );
-  };
-  useEffect(() => {
-    if (!loggedUser) return;
-
-    const chatId = generateChatId(loggedUser.id, user._id);
-
-    const unsub = onSnapshot(doc(db, "chats", chatId), (snap) => {
-      if (!snap.exists()) return;
-
-      const typingData = snap.data().typing || {};
-      setOtherUserTyping(typingData[user._id] === true);
-    });
-
-    return unsub;
-  }, [loggedUser]);
 
   // Send message
   const sendMessage = async () => {
     if (!text.trim()) return;
-    setIsTyping(false);
-    updateTypingStatus(false);
-
 
     const chatId = generateChatId(loggedUser.id, user._id);
 
@@ -135,7 +99,7 @@ const Chat = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
+      <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
@@ -153,16 +117,7 @@ const Chat = ({ route, navigation }) => {
               </View>
               <View>
                 <CustomText weight="bold" style={styles.userName}>{user.email}</CustomText>
-                <CustomText
-                  weight="medium"
-                  style={{
-                    fontSize: width * 0.03,
-                    color: otherUserTyping ? "#DA3C84" : "#00A236"
-                  }}
-                >
-                  {otherUserTyping ? "Typing..." : "Online"}
-                </CustomText>
-
+                <CustomText weight="medium" style={{ fontSize: width * 0.03, color: '#00A236' }}>Online</CustomText>
               </View>
             </View>
           </View>
@@ -170,8 +125,8 @@ const Chat = ({ route, navigation }) => {
         </View>
 
         {/* Messages */}
-        <ScrollView
-          ref={scrollRef}
+        <ScrollView 
+          ref={scrollRef} 
           contentContainerStyle={{ paddingHorizontal: width * 0.0625, flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -211,19 +166,7 @@ const Chat = ({ route, navigation }) => {
             placeholder="Type here.."
             placeholderTextColor="#AAAAAA"
             value={text}
-            onChangeText={(val) => {
-              setText(val);
-
-              if (!isTyping) {
-                setIsTyping(true);
-                updateTypingStatus(true);
-              }
-            }}
-            onBlur={() => {
-              setIsTyping(false);
-              updateTypingStatus(false);
-            }}
-
+            onChangeText={setText}
             multiline={false}
             returnKeyType="send"
             onSubmitEditing={sendMessage}

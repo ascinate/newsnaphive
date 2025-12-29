@@ -1,36 +1,45 @@
-import React, { useState, useContext } from "react";
-import { View, Text, TextInput, ScrollView, StyleSheet, Platform, TouchableOpacity, Alert } from "react-native";
+import React, { useContext, useState } from "react";
+import { View, Text, TextInput, ScrollView, StyleSheet, Platform, TouchableOpacity } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import CheckBox from '@react-native-community/checkbox';
+
 //svg
 import QR from "../../assets/svg/qr.svg";
 import Calender from "../../assets/svg/calender.svg";
-import Timer from "../../assets/svg/timer.svg";
+import BackArrow from "../../assets/svg/backArrow.svg";
 
 //components
-import FolderLayout from "./FolderLayout";
+import FolderLayout from "../screen/FolderLayout";
 import ThemeButton from "../components/ThemeButton";
 import { EventContext } from "../context/EventContext";
 
 const createEvent = require("../../assets/createEvent.png");
 
-const CreateEventThree = ({ navigation, route }) => {
-
+const CreateEventFour = ({ navigation, route }) => {
+    // separate states for each field
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
     const [startTime, setStartTime] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date());
-    const [isSelected, setSelection] = useState(false);
+
     const [showStartDate, setShowStartDate] = useState(false);
     const [showEndDate, setShowEndDate] = useState(false);
     const [showStartTime, setShowStartTime] = useState(false);
     const [showEndTime, setShowEndTime] = useState(false);
 
+    const [uploadedImage, setUploadedImage] = useState(null);
+
+
+    const [inputData, setInputData] = useState("");
 
     const newEvent = route.params?.newEvent;
-    
+
 
     const { addEvent } = useContext(EventContext);
+
+
+
+
+
 
     const onChangeStartDate = (event, selectedDate) => {
         setShowStartDate(Platform.OS === "ios");
@@ -71,17 +80,18 @@ const CreateEventThree = ({ navigation, route }) => {
                 {/* Header */}
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 20 }}>
                     <Calender width={24} height={24} />
-                    <Text style={{ fontSize: 18, fontWeight: "600" }}>Event Date & Times</Text>
+                    <Text style={{ fontSize: 18, fontWeight: "600" }}>Upload Approval</Text>
                 </View>
 
                 {/* Start Date */}
                 <View>
-                    <Text style={{ marginBottom: 10 }}>Start Date *</Text>
+                    <Text style={{ marginBottom: 10 }}>Auto upload Upload Approval</Text>
                     <TouchableOpacity onPress={() => setShowStartDate(true)}>
                         <TextInput
-                            value={startDate.toDateString()}
-                            style={[styles.input, {marginBottom: 18}]}
-                            editable={false} 
+                            value={inputData}
+                            style={styles.input}
+                            editable={false}
+                            placeholder="Auto-upload & share"
                         />
                     </TouchableOpacity>
                     {showStartDate && (
@@ -92,21 +102,11 @@ const CreateEventThree = ({ navigation, route }) => {
                             onChange={onChangeStartDate}
                         />
                     )}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 35 }}>
-                        <CheckBox
-                            value={isSelected}
-                            onValueChange={setSelection}
-                            tintColors={{ true: "#4CAF50", false: "#ccc" }}
-                        />
-                        <Text>No ending date</Text>
-                    </View>
                 </View>
-
-
 
                 {/* End Date */}
                 <View>
-                    <Text style={{ marginBottom: 10 }}>End Date *</Text>
+                    <Text style={{ marginBottom: 10 }}>Require approval</Text>
                     <TouchableOpacity onPress={() => setShowEndDate(true)}>
                         <TextInput
                             value={endDate.toDateString()}
@@ -125,36 +125,15 @@ const CreateEventThree = ({ navigation, route }) => {
                 </View>
 
 
-                {/* Start Date */}
-                <View>
-                    <Text style={{ marginBottom: 10 }}>Start Date *</Text>
-                    <TouchableOpacity onPress={() => setShowStartDate(true)}>
-                        <TextInput
-                            value={startDate.toDateString()}
-                            style={styles.input}
-                            editable={false} // disable typing
-                        />
-                    </TouchableOpacity>
-                    {showStartDate && (
-                        <DateTimePicker
-                            value={startDate}
-                            mode="date"
-                            display="default"
-                            onChange={onChangeStartDate}
-                        />
-                    )}
-                </View>
-
-                {/* Start Time */}
                 <View style={styles.inputContainer}>
-                    <Text style={{ marginBottom: 10 }}>Start Time *</Text>
+                    <Text style={{ marginBottom: 10 }}>Access Control</Text>
                     <TouchableOpacity onPress={() => setShowStartTime(true)}>
                         <TextInput
                             value={startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                             style={styles.input}
                             editable={false}
                         />
-                        <Timer width={24} height={24} style={styles.timerIcon} />
+                        <BackArrow width={24} height={24} style={styles.timerIcon} />
                     </TouchableOpacity>
                     {showStartTime && (
                         <DateTimePicker
@@ -166,41 +145,22 @@ const CreateEventThree = ({ navigation, route }) => {
                     )}
                 </View>
 
-                {/* End Time */}
-                <View style={styles.inputContainer}>
-                    <Text style={{ marginBottom: 10 }}>End Time *</Text>
-                    <TouchableOpacity onPress={() => setShowEndTime(true)}>
-                        <TextInput
-                            value={endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                            style={styles.input}
-                            editable={false}
-                        />
-                        <Timer width={24} height={24} style={styles.timerIcon} />
-                    </TouchableOpacity>
-                    {showEndTime && (
-                        <DateTimePicker
-                            value={endTime}
-                            mode="time"
-                            display="default"
-                            onChange={onChangeEndTime}
-                        />
-                    )}
-                </View>
+                <Text style={{ color: '#A8A8A8' }}>You can now create events with complete control over media sharing, dates, times, and attendee access. The QR code and passcode system makes it easy for attendees to join and share media at your events.</Text>
 
 
                 {/* Continue Button */}
-<ThemeButton
-          text="Continue"
-          onPress={() => {
-            if (newEvent) {
-
-              navigation.navigate("CreateEventFour", { newEvent });
-            } else {
-              Alert.alert("Something went wrong, try again!");
-            }
-          }}
-          style={{ width: "100%" }}
-        />
+                <ThemeButton
+                    text="Create event"
+                    onPress={() => {
+                        if (newEvent) {
+                            addEvent(newEvent);
+                            navigation.navigate("Home");
+                        } else {
+                            Alert.alert("Something went wrong, try again!");
+                        }
+                    }}
+                    style={{ marginTop: 40 }}
+                />
             </ScrollView>
         </FolderLayout>
     );
@@ -226,4 +186,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CreateEventThree;
+export default CreateEventFour;

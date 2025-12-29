@@ -9,9 +9,6 @@ import { colors } from '../Theme/theme';
 import TopNav from '../components/TopNavbar';
 import CustomText from '../components/CustomText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ImageBackground } from "react-native";
-
-
 import axios from "axios";
 import { useTranslation } from 'react-i18next';
 
@@ -22,6 +19,7 @@ const picnic1 = require('../../assets/picnic1.jpg');
 const { width, height } = Dimensions.get('window');
 
 const Home = ({ navigation, route }) => {
+  const [fadeAnim] = useState(new Animated.Value(0)); // Background transition animation
   const [refreshing, setRefreshing] = useState(false);
   const [showImportBanner, setShowImportBanner] = useState(true);
   const { events, setEvents } = useContext(EventContext);
@@ -29,11 +27,18 @@ const Home = ({ navigation, route }) => {
   const opacityAnim = useRef(new Animated.Value(1)).current;
   const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState(null);
-
   const { hives, setHives } = useContext(EventContext);
-
   const { t, i18n } = useTranslation();
-  // ADD THESE TWO FUNCTIONS HERE - RIGHT AFTER useState DECLARATIONS
+
+  // Start background transition animation
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1200, // 1.2 seconds transition
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   // Format date → DD/MM/YYYY
   const formatDisplayDate = (date) => {
     if (!date) return 'N/A';
@@ -48,19 +53,15 @@ const Home = ({ navigation, route }) => {
   const formatDisplayTime = (time) => {
     if (!time) return 'N/A';
 
-    // If it's already a formatted string like "12:09 pm", return it as is
     if (typeof time === 'string') {
-      // Check if it already contains AM/PM
       if (time.toLowerCase().includes('am') || time.toLowerCase().includes('pm')) {
         return time;
       }
     }
 
-    // If it's a Date object or valid date string, format it
     try {
       const dateObj = time instanceof Date ? time : new Date(time);
 
-      // Check if date is valid
       if (isNaN(dateObj.getTime())) {
         return typeof time === 'string' ? time : 'N/A';
       }
@@ -75,33 +76,21 @@ const Home = ({ navigation, route }) => {
 
       return `${hours}:${minutes} ${ampm}`;
     } catch (error) {
-      // If conversion fails, return the original value or N/A
       return typeof time === 'string' ? time : 'N/A';
     }
   };
 
-  // REMOVE the old parseExpiryDate function completely
-  // REPLACE the removeExpiredEvents function with this:
-  // REPLACE the removeExpiredEvents function in Home.jsx with this:
-
   const removeExpiredEvents = useCallback(() => {
     const now = new Date();
 
-    // Update both hives and events
     setHives(prevHives =>
       prevHives.filter(hive => {
-        // Keep non-temporary hives
         if (!hive.isTemporary) return true;
-
-        // Keep hives without expiry date (safety)
         if (!hive.expiryDate) return true;
 
-        // Parse the expiry date from API format (YYYY-MM-DD)
         const expiryDate = new Date(hive.expiryDate);
 
-        // If we have endTime, parse and combine it
         if (hive.endTime) {
-          // Parse time from API format (e.g., "11:09 pm")
           const timeStr = hive.endTime.toLowerCase();
           const [time, period] = timeStr.split(' ');
           const [hours, minutes] = time.split(':').map(Number);
@@ -115,11 +104,9 @@ const Home = ({ navigation, route }) => {
 
           expiryDate.setHours(hour24, minutes, 0, 0);
         } else {
-          // If no end time, set to end of day
           expiryDate.setHours(23, 59, 59, 999);
         }
 
-        // Check if hive has expired
         const hasExpired = expiryDate < now;
 
         if (hasExpired) {
@@ -130,7 +117,6 @@ const Home = ({ navigation, route }) => {
       })
     );
 
-    // Also update events state to keep them in sync
     setEvents(prevEvents =>
       prevEvents.filter(event => {
         if (!event.isTemporary) return true;
@@ -160,14 +146,9 @@ const Home = ({ navigation, route }) => {
     );
   }, [setHives, setEvents]);
 
-
   useEffect(() => {
-    // Run immediately when component mounts
     removeExpiredEvents();
-
-    // Run every 30 seconds to auto-remove expired events
     const interval = setInterval(removeExpiredEvents, 30 * 1000);
-
     return () => clearInterval(interval);
   }, [removeExpiredEvents]);
 
@@ -228,16 +209,12 @@ const Home = ({ navigation, route }) => {
     ]).start(() => setShowImportBanner(false));
   };
 
-  // Filter events based on search query
   const filteredHives = hives
     ? hives.filter(hive =>
       hive.hiveName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       hive.description?.toLowerCase().includes(searchQuery.toLowerCase())
     )
     : [];
-
-
-
 
   useEffect(() => {
     const fetchHives = async () => {
@@ -271,10 +248,6 @@ const Home = ({ navigation, route }) => {
     fetchHives();
   }, []);
 
-
-
-
-
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAF9' }}>
@@ -287,7 +260,6 @@ const Home = ({ navigation, route }) => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-
           <View style={[styles.searchContainer, { marginHorizontal: width * 0.05 }]}>
             <TextInput
               style={styles.searchInput}
@@ -299,66 +271,93 @@ const Home = ({ navigation, route }) => {
             <Search color="#6B7280" size={20} style={styles.searchIcon} />
           </View>
 
-          <ImageBackground
-            source={require("../../assets/background.png")}
-            style={[styles.ImportSection, {
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }]}>
+          {/* Background Transition Section */}
+          <View style={[styles.ImportSection, { overflow: 'hidden' }]}>
+            {/* Background color layer - fades out */}
+            <Animated.View
+              style={{
+                ...StyleSheet.absoluteFillObject,
+                backgroundColor: '#ec9e00ff',
+                opacity: fadeAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 0],
+                }),
+              }}
+            />
+
+            {/* Background image layer - fades in */}
+            <Animated.Image
+              source={require("../../assets/background.png")}
+              style={{
+                ...StyleSheet.absoluteFillObject,
+                opacity: fadeAnim,
+              }}
+              resizeMode="cover"
+            />
+
+            {/* Content layer */}
             <View
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
+                flex: 1,
                 justifyContent: 'center',
-                gap: width * 0.03,
+                alignItems: 'center',
               }}
             >
-              <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignContent: 'center',
-                    alignSelf: 'center',
-                    gap: 8,
-                    backgroundColor: 'rgba(255, 219, 186, 0.5)',
-                    borderRadius: 25,
-                    paddingHorizontal: 16,
-                    paddingVertical: 6,
-                  }}
-                >
-                  <Sparkles color="#ffffff" size={22} />
-                  <CustomText weight="medium" style={styles.importHeading}>
-                    {t('welcome')}
-                  </CustomText>
-                  <CustomText weight="bold" style={styles.importHeading}>
-                    {user ? user.name : t('loading')}!
-                  </CustomText>
-                </View>
-
-                <CustomText weight="bold" style={[styles.importSub, { textAlign: 'center' }]}>
-                  {t('captureYourMoments')}
-                </CustomText>
-
-                <CustomText weight="medium" style={[styles.importSubLine, { textAlign: 'center' }]}>
-                  {t('letMemoriesFlow')}
-                </CustomText>
-
-                <TouchableOpacity
-                  style={styles.importBtnWhite}
-                  onPress={() => navigation.navigate('CreateHive')}
-                >
-                  <View>
-                    <Plus color="#DA3C84" size={20} />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: width * 0.03,
+                }}
+              >
+                <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignContent: 'center',
+                      alignSelf: 'center',
+                      gap: 8,
+                      backgroundColor: 'rgba(255, 219, 186, 0.5)',
+                      borderRadius: 25,
+                      paddingHorizontal: 16,
+                      paddingVertical: 6,
+                    }}
+                  >
+                    <Sparkles color="#ffffff" size={22} />
+                    <CustomText weight="medium" style={styles.importHeading}>
+                      {t('welcome')}
+                    </CustomText>
+                    <CustomText weight="bold" style={styles.importHeading}>
+                      {user ? user.name : t('loading')}!
+                    </CustomText>
                   </View>
-                  <CustomText weight="bold" style={{ color: '#DA3C84', fontSize: 14, }}>
-                    {t('createNewHive')}
+
+                  <CustomText weight="bold" style={[styles.importSub, { textAlign: 'center' }]}>
+                    {t('captureYourMoments')}
                   </CustomText>
-                </TouchableOpacity>
+
+                  <CustomText weight="medium" style={[styles.importSubLine, { textAlign: 'center' }]}>
+                    {t('letMemoriesFlow')}
+                  </CustomText>
+
+                  <TouchableOpacity
+                    style={styles.importBtnWhite}
+                    onPress={() => navigation.navigate('CreateHive')}
+                  >
+                    <View>
+                      <Plus color="#DA3C84" size={20} />
+                    </View>
+                    <CustomText weight="bold" style={{ color: '#DA3C84', fontSize: 14 }}>
+                      {t('createNewHive')}
+                    </CustomText>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </ImageBackground>
-          <View style={{ paddingHorizontal: width * 0.05, }}>
+          </View>
+
+          <View style={{ paddingHorizontal: width * 0.05 }}>
             {/* Dashboard Cards */}
             <View
               style={{
@@ -425,7 +424,6 @@ const Home = ({ navigation, route }) => {
                     style={[styles.cardText, { color: '#000000', textAlign: 'center' }]}
                   >
                     {events.reduce((total, event) => {
-                      // Check both 'images' (from API) and 'photos' (legacy/local)
                       const imageCount = event.images?.length || event.photos?.length || 0;
                       return total + imageCount;
                     }, 0)}
@@ -440,10 +438,8 @@ const Home = ({ navigation, route }) => {
                 </View>
               </View>
 
-
               <View style={styles.dashCard}>
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-
                   <View
                     style={{
                       backgroundColor: '#B674F9',
@@ -468,19 +464,16 @@ const Home = ({ navigation, route }) => {
                   >
                     {t('members')}
                   </CustomText>
-
                 </View>
               </View>
-
             </View>
 
-
-            <View style={{ paddingBottom: 100, }}>
+            <View style={{ paddingBottom: 100 }}>
               <View style={styles.eventHeader}>
                 <CustomText weight="medium" style={styles.eventSection}>
                   {t('yourHives')}
                 </CustomText>
-                <CustomText weight="medium" style={{ color: colors.textGray, marginTop: 4 }} >
+                <CustomText weight="medium" style={{ color: colors.textGray, marginTop: 4 }}>
                   {t('managePhotoCollections')}
                 </CustomText>
               </View>
@@ -574,7 +567,6 @@ const Home = ({ navigation, route }) => {
                     </TouchableOpacity>
                   ))
                 ) : (
-
                   <View
                     style={{
                       alignItems: 'center',
@@ -628,7 +620,6 @@ const Home = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
     backgroundColor: "#FAFAF9",
   },
   heroSection: {
@@ -687,7 +678,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   ImportSection: {
-
     backgroundColor: '#ec9e00ff',
     marginTop: height * 0.025,
     padding: width * 0.06,
@@ -817,7 +807,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
-
     elevation: 1,
   },
   cardImg: {
@@ -832,7 +821,6 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 16,
   },
-
   eventCard: {
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -845,15 +833,12 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 6,
   },
-
-
   eventImage: {
     width: '100%',
     height: 140,
     resizeMode: 'cover',
     borderRadius: 8,
   },
-
   eventInfo: {
     paddingTop: 14,
     paddingBottom: 14,
@@ -861,39 +846,33 @@ const styles = StyleSheet.create({
     paddingRight: 4,
     backgroundColor: '#fff',
   },
-
   eventTitle: {
     fontSize: 16,
     color: '#000',
     marginBottom: 4,
   },
-
   eventTimeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     marginBottom: 4,
   },
-
   eventTimeText: {
     fontSize: 12,
     color: '#6B7280',
     paddingRight: 4,
   },
-
   eventDescription: {
     fontSize: 13,
     color: '#6B7280',
     marginBottom: 12,
   },
-
   memberRow: {
     flexDirection: 'row',
     alignItems: 'center',
     position: 'relative',
     height: 28,
   },
-
   memberAvatar: {
     width: 26,
     height: 26,
@@ -901,13 +880,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     zIndex: 2,
   },
-
   memberDP: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
-
   memberBadge: {
     position: 'absolute',
     left: 16,
@@ -918,15 +895,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 3,
-
   },
-
   memberCount: {
     color: '#fff',
     fontSize: 10,
     fontWeight: 'bold',
   },
-
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -937,18 +911,15 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
   },
-
   searchIcon: {
     marginRight: 10,
   },
-
   searchInput: {
     flex: 1,
     fontSize: 16,
     color: '#000',
     padding: 0,
   },
-
-
 });
+
 export default Home;

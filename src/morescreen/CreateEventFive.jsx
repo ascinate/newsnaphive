@@ -8,7 +8,7 @@ import Calender from "../../assets/svg/calender.svg";
 import BackArrow from "../../assets/svg/backArrow.svg";
 
 //components
-import FolderLayout from "./FolderLayout";
+import FolderLayout from "../screen/FolderLayout";
 import ThemeButton from "../components/ThemeButton";
 
 const createEvent = require("../../assets/createEvent.png");
