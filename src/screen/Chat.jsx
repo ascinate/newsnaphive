@@ -160,7 +160,7 @@ const Chat = ({ route, navigation }) => {
                     color: otherUserTyping ? "#DA3C84" : "#00A236"
                   }}
                 >
-                  {otherUserTyping ? "Typing..." : "Online"}
+                  {otherUserTyping ? "Typing..." : "Offline"}
                 </CustomText>
 
               </View>
