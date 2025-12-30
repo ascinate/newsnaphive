@@ -23,7 +23,7 @@ import CreateFolder from "./src/morescreen/CreateFolder";
 import Folder from "./src/morescreen/Folder";
 import AddExpenseBlock from "./src/morescreen/AddExpenseBlock";
 import AddNote from "./src/morescreen/AddNote";
-import NewPage from "./src/screen/ShareApps";
+import NewPage from "./src/morescreen/ShareApps";
 import Home from "./src/screen/Home";
 import PhotoShare from "./src/screen/PhotoShare";
 import AddMember from "./src/morescreen/AddMember";
@@ -101,7 +101,7 @@ const App = () => {
                   {/* <Stack.Screen name="Folder" component={Folder} /> */}
                   {/* <Stack.Screen name="AddExpenseBlock" component={AddExpenseBlock} /> */}
                   {/* <Stack.Screen name="AddNote" component={AddNote} /> */}
-                  <Stack.Screen name="NewPage" component={NewPage} />
+                  {/* <Stack.Screen name="NewPage" component={NewPage} /> */}
                   <Stack.Screen name="Home" component={MyTabs} />
                   <Stack.Screen name="CreateHive" component={CreateHive} />
                   <Stack.Screen name="PhotoShare" component={PhotoShare} />

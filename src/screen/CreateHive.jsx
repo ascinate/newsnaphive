@@ -9,6 +9,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLoader } from "../context/LoaderContext";
+import { useTranslation } from 'react-i18next';
 // components
 import TopNav from '../components/TopNavbar';
 import CustomText from '../components/CustomText';
@@ -29,6 +30,7 @@ const picnic4 = require("../../assets/picnic4.jpg");
 const { width, height } = Dimensions.get('window');
 
 const CreateHive = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { showLoader, hideLoader } = useLoader();
     const [uploadedImage, setUploadedImage] = useState(null);
     const [hiveName, setHiveName] = useState("");
@@ -57,8 +59,8 @@ const CreateHive = ({ navigation, route }) => {
         if (route?.params?.showCreateToast) {
             Toast.show({
                 type: "success",
-                text1: "Hive Created 🎉",
-                text2: "Start sharing memories now",
+                text1: t('hiveCreatedSuccess'),
+                text2: t('startSharingMemories'),
             });
 
             // 🔥 clear param so it doesn't show again
@@ -102,9 +104,10 @@ const CreateHive = ({ navigation, route }) => {
 
         return `${hours}:${minutes} ${ampm}`;
     };
+    
     const data = [
-        { label: 'Invite Only', value: '1' },
-        { label: 'Public', value: '2' },
+        { label: t('inviteOnly'), value: '1' },
+        { label: t('public'), value: '2' },
     ];
 
 
@@ -154,8 +157,8 @@ const CreateHive = ({ navigation, route }) => {
             if (isCreateDisabled) {
                 Toast.show({
                     type: "info",
-                    text1: "Incomplete Form",
-                    text2: "Please fill all required fields",
+                    text1: t('completeAllFields'),
+                    text2: t('completeAllFields'),
                 });
 
                 return;
@@ -239,16 +242,16 @@ const CreateHive = ({ navigation, route }) => {
             if (!response.ok) {
                 Toast.show({
                     type: "error",
-                    text1: "Creation Failed",
-                    text2: result.message || "Unable to create hive",
+                    text1: t('somethingWentWrong'),
+                    text2: result.message || t('errorCreatingHive'),
                 });
 
                 return;
             }
             Toast.show({
                 type: "success",
-                text1: "Hive Created 🎉",
-                text2: "Start sharing memories now",
+                text1: t('hiveCreatedSuccess'),
+                text2: t('startSharingMemories'),
             });
 
             setTimeout(() => {
@@ -269,8 +272,8 @@ const CreateHive = ({ navigation, route }) => {
             console.log("Create Hive Error:", error);
             Toast.show({
                 type: "error",
-                text1: "Error ❌",
-                text2: "Something went wrong. Try again",
+                text1: t('somethingWentWrong'),
+                text2: t('somethingWentWrong'),
             });
 
         } finally {
@@ -364,20 +367,20 @@ const CreateHive = ({ navigation, route }) => {
                         >
                             <Sparkles color="#FFAD60" size={14} />
                             <CustomText weight="medium" style={styles.importHeading}>
-                                Create a new
+                                {t('createANew')}
                             </CustomText>
                             <CustomText weight="bold" style={styles.importHeading}>
-                                Hive
+                                {t('hive')}
                             </CustomText>
                         </View>
                     </View>
 
                     <View>
                         <CustomText weight="bold" style={styles.snapText}>
-                            Start Sharing Memories
+                            {t('startSharingMemories')}
                         </CustomText>
                     </View>
-                    <CustomText weight='regular' style={{ color: '#374151' }}>Set up your photo collection in seconds</CustomText>
+                    <CustomText weight='regular' style={{ color: '#374151' }}>{t('setupPhotoCollection')}</CustomText>
 
                     <View style={[styles.createHiveCard, { marginBottom: 120, }]}>
                         <LinearGradient
@@ -390,7 +393,7 @@ const CreateHive = ({ navigation, route }) => {
                                 <View style={styles.content}>
 
                                     <CustomText weight="Bold" style={styles.continueTxt}>
-                                        Hive Details
+                                        {t('hiveDetails')}
                                     </CustomText>
                                 </View>
                             </View>
@@ -398,9 +401,9 @@ const CreateHive = ({ navigation, route }) => {
 
                         <View style={{ paddingHorizontal: 20, }}>
                             <View style={{ marginBottom: 16, marginTop: 16 }}>
-                                <CustomText weight='bold' style={{ marginBottom: 4, color: '#374151' }}>Hive Name *</CustomText>
+                                <CustomText weight='bold' style={{ marginBottom: 4, color: '#374151' }}>{t('hiveName')} *</CustomText>
                                 <TextInput
-                                    placeholder='Summer Wedding, Family Vacation'
+                                    placeholder={t('hiveNamePlaceholder')}
                                     style={styles.inputType}
                                     keyboardType="default"
                                     autoCapitalize="none"
@@ -413,10 +416,10 @@ const CreateHive = ({ navigation, route }) => {
 
                             <View style={{ marginBottom: 16 }}>
                                 <CustomText weight="bold" style={{ marginBottom: 4, color: '#374151' }}>
-                                    Description
+                                    {t('description')}
                                 </CustomText>
                                 <TextInput
-                                    placeholder="Share details about your hive..."
+                                    placeholder={t('descriptionPlaceholder')}
                                     style={[styles.inputType, { textAlignVertical: 'top', height: 100 }]}
                                     multiline={true}
                                     numberOfLines={4}
@@ -426,10 +429,10 @@ const CreateHive = ({ navigation, route }) => {
                                 />
                             </View>
 
-                            <CustomText weight='bold' style={{ marginBottom: 0, color: '#374151' }}>Cover Image</CustomText>
+                            <CustomText weight='bold' style={{ marginBottom: 0, color: '#374151' }}>{t('coverImage')}</CustomText>
 
 
-                            <CustomText weight='mediumItalic' style={{ marginBottom: 8, color: '#777777ff', fontSize: 12 }}>( Only images under 1MB are allowed. Larger files will be rejected. )</CustomText>
+                            <CustomText weight='mediumItalic' style={{ marginBottom: 8, color: '#777777ff', fontSize: 12 }}>{t('imageSizeWarning')}</CustomText>
                             <TouchableWithoutFeedback onPress={() => {
                                 const options = {
                                     mediaType: "photo",
@@ -455,8 +458,8 @@ const CreateHive = ({ navigation, route }) => {
 
                                         if (selectedImage.fileSize && selectedImage.fileSize > 1 * 1024 * 1024) {
                                             showModal({
-                                                title: "Image too large",
-                                                message: "Please choose an image smaller than 1MB.",
+                                                title: t('imageExceedsSize'),
+                                                message: t('imageExceedsSize'),
                                                 type: "warning",
                                             });
 
@@ -484,7 +487,7 @@ const CreateHive = ({ navigation, route }) => {
                                         <>
                                             <Upload color='#9B9B9B' width={28} height={28} />
 
-                                            <CustomText weight='medium' style={{ marginTop: 4, color: '#67696b' }}>Upload your own image</CustomText>
+                                            <CustomText weight='medium' style={{ marginTop: 4, color: '#67696b' }}>{t('uploadYourOwnImage')}</CustomText>
                                         </>
                                     )}
                                 </View>
@@ -492,7 +495,7 @@ const CreateHive = ({ navigation, route }) => {
 
 
                             <CustomText weight="medium" style={{ marginBottom: 15, color: colors.textGray, marginTop: 16, }}>
-                                Or choose from stock options based on event type
+                                {t('chooseFromStock')}
                             </CustomText>
                             <View style={styles.imageGrid}>
                                 <TouchableOpacity
@@ -502,7 +505,7 @@ const CreateHive = ({ navigation, route }) => {
                                 >
                                     <Image source={picnic1} style={styles.image} />
                                     <View style={styles.overlay}>
-                                        <Text style={styles.imageText}>Corporate</Text>
+                                        <Text style={styles.imageText}>{t('corporate')}</Text>
                                     </View>
                                 </TouchableOpacity>
 
@@ -510,14 +513,14 @@ const CreateHive = ({ navigation, route }) => {
 
                                     <Image source={picnic2} style={styles.image} />
                                     <View style={styles.overlay}>
-                                        <Text style={styles.imageText}>Birthday party</Text>
+                                        <Text style={styles.imageText}>{t('birthdayParty')}</Text>
                                     </View>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.imageContainer} onPress={() => setUploadedImage(picnic3)}>
 
                                     <Image source={picnic3} style={styles.image} />
                                     <View style={styles.overlay}>
-                                        <Text style={styles.imageText}>Wedding</Text>
+                                        <Text style={styles.imageText}>{t('wedding')}</Text>
                                     </View>
                                 </TouchableOpacity>
 
@@ -525,21 +528,21 @@ const CreateHive = ({ navigation, route }) => {
 
                                     <Image source={picnic4} style={styles.image} />
                                     <View style={styles.overlay}>
-                                        <Text style={styles.imageText}>Reunion</Text>
+                                        <Text style={styles.imageText}>{t('reunion')}</Text>
                                     </View>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.imageContainer} onPress={() => setUploadedImage(picnic1)}>
 
                                     <Image source={picnic1} style={styles.image} />
                                     <View style={styles.overlay}>
-                                        <Text style={styles.imageText}>Others</Text>
+                                        <Text style={styles.imageText}>{t('others')}</Text>
                                     </View>
                                 </TouchableOpacity>
                             </View>
 
                             <View style={{ marginBottom: 16 }}>
                                 <CustomText weight="bold" style={{ marginBottom: 4, color: '#374151' }}>
-                                    Privacy Mode
+                                    {t('privacyMode')}
                                 </CustomText>
                                 <Dropdown
                                     style={[styles.inputType]}
@@ -550,8 +553,8 @@ const CreateHive = ({ navigation, route }) => {
                                     maxHeight={300}
                                     labelField="label"
                                     valueField="value"
-                                    searchPlaceholder="Search..."
-                                    placeholder="Hive Type"
+                                    searchPlaceholder={t('search')}
+                                    placeholder={t('hiveType')}
                                     value={hiveType}
                                     onChange={item => {
                                         setHiveType(item.value);
@@ -563,7 +566,7 @@ const CreateHive = ({ navigation, route }) => {
 
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', marginBottom: 12 }}>
                                     <Shield color='#5B0064' />
-                                    <CustomText weight='bold' style={{ fontSize: 16, }}>Media Upload Settings</CustomText>
+                                    <CustomText weight='bold' style={{ fontSize: 16, }}>{t('mediaUploadSettings')}</CustomText>
                                 </View>
                                 <TouchableOpacity
                                     style={styles.privacy}
@@ -592,8 +595,8 @@ const CreateHive = ({ navigation, route }) => {
                                     </View>
 
                                     <View style={{ flex: 1, marginLeft: 12 }}>
-                                        <CustomText weight='bold' style={{ fontSize: 16 }}>Automatic Upload</CustomText>
-                                        <CustomText weight='medium' style={{ color: colors.textGray, fontSize: 12 }}>All media is uploaded instantly. Only select if you trust your group and the content they'll share</CustomText>
+                                        <CustomText weight='bold' style={{ fontSize: 16 }}>{t('automaticUpload')}</CustomText>
+                                        <CustomText weight='medium' style={{ color: colors.textGray, fontSize: 12 }}>{t('automaticUploadDesc')}</CustomText>
                                     </View>
                                 </TouchableOpacity>
 
@@ -616,9 +619,7 @@ const CreateHive = ({ navigation, route }) => {
                                             <CustomText
                                                 weight='medium'
                                                 style={{ color: colors.textGray, fontSize: 12 }}>
-                                                I understand that I am responsible for all media automatically uploaded
-                                                to this Hive. Members will be able to upload photos and videos without
-                                                my approval.
+                                                {t('automaticUploadWarning')}
                                             </CustomText>
                                         </View>
                                     </View>
@@ -652,8 +653,8 @@ const CreateHive = ({ navigation, route }) => {
                                         </View>
                                     </View>
                                     <View style={{ flex: 1, marginLeft: 12 }}>
-                                        <CustomText weight='bold' style={{ fontSize: 16 }}>Approval Required</CustomText>
-                                        <CustomText weight='medium' style={{ color: colors.textGray, fontSize: 12 }}>Uploaded media must be reviewed and approved by authorized members. Best for formal events.</CustomText>
+                                        <CustomText weight='bold' style={{ fontSize: 16 }}>{t('approvalRequired')}</CustomText>
+                                        <CustomText weight='medium' style={{ color: colors.textGray, fontSize: 12 }}>{t('approvalRequiredDesc')}</CustomText>
                                     </View>
                                 </TouchableOpacity>
 
@@ -668,8 +669,8 @@ const CreateHive = ({ navigation, route }) => {
                                         <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                                             <CalendarDays />
                                             <View style={{ marginLeft: 12 }}>
-                                                <CustomText weight='bold' style={{ fontSize: 16 }}>Temporary Event Hive</CustomText>
-                                                <CustomText weight='regular' style={{ color: '#374151', fontSize: 12 }}>Set dates for this event</CustomText>
+                                                <CustomText weight='bold' style={{ fontSize: 16 }}>{t('temporaryEventHive')}</CustomText>
+                                                <CustomText weight='regular' style={{ color: '#374151', fontSize: 12 }}>{t('setDatesForEvent')}</CustomText>
                                             </View>
                                         </View>
                                         <Switch
@@ -698,7 +699,7 @@ const CreateHive = ({ navigation, route }) => {
                                                 >
                                                     <Calendar width={16} />
                                                     <CustomText weight="semiBold" color="#374151">
-                                                        Event Start Date
+                                                        {t('eventStartDate')}
                                                     </CustomText>
                                                 </View>
 
@@ -708,7 +709,7 @@ const CreateHive = ({ navigation, route }) => {
                                                 >
                                                     <View style={styles.input} pointerEvents="none">
                                                         <TextInput
-                                                            placeholder="Select Date"
+                                                            placeholder={t('selectDate')}
                                                             value={formatDate(startDate)}
                                                             editable={false}
                                                             style={{ color: '#000' }}
@@ -736,7 +737,7 @@ const CreateHive = ({ navigation, route }) => {
                                                                     marginTop: 8
                                                                 }}
                                                             >
-                                                                <CustomText weight="bold" style={{ color: '#fff' }}>Done</CustomText>
+                                                                <CustomText weight="bold" style={{ color: '#fff' }}>{t('done')}</CustomText>
                                                             </TouchableOpacity>
                                                         )}
                                                     </View>
@@ -747,7 +748,7 @@ const CreateHive = ({ navigation, route }) => {
                                                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 5 }}>
                                                     <CalendarOff width={16} />
                                                     <CustomText weight="semiBold" color="#374151">
-                                                        Event End Date
+                                                        {t('eventEndDate')}
                                                     </CustomText>
                                                 </View>
 
@@ -757,7 +758,7 @@ const CreateHive = ({ navigation, route }) => {
                                                 >
                                                     <View style={styles.input} pointerEvents="none">
                                                         <TextInput
-                                                            placeholder="Select Date"
+                                                            placeholder={t('selectDate')}
                                                             value={formatDate(endDate)}
                                                             editable={false}
                                                             style={{ color: '#000' }}
@@ -785,7 +786,7 @@ const CreateHive = ({ navigation, route }) => {
                                                                     marginTop: 8
                                                                 }}
                                                             >
-                                                                <CustomText weight="bold" style={{ color: '#fff' }}>Done</CustomText>
+                                                                <CustomText weight="bold" style={{ color: '#fff' }}>{t('done')}</CustomText>
                                                             </TouchableOpacity>
                                                         )}
                                                     </View>
@@ -800,7 +801,7 @@ const CreateHive = ({ navigation, route }) => {
                                                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 5 }}>
                                                         <Timer width={16} />
                                                         <CustomText weight="semiBold" color="#374151">
-                                                            Start Time
+                                                            {t('startTime')}
                                                         </CustomText>
                                                     </View>
 
@@ -810,7 +811,7 @@ const CreateHive = ({ navigation, route }) => {
                                                     >
                                                         <View style={styles.input} pointerEvents="none">
                                                             <TextInput
-                                                                placeholder="Select Time"
+                                                                placeholder={t('selectTime')}
                                                                 value={formatTime(startTime)}
                                                                 editable={false}
                                                                 style={{ color: '#000' }}
@@ -837,7 +838,7 @@ const CreateHive = ({ navigation, route }) => {
                                                                         marginTop: 8
                                                                     }}
                                                                 >
-                                                                    <CustomText weight="bold" style={{ color: '#fff' }}>Done</CustomText>
+                                                                    <CustomText weight="bold" style={{ color: '#fff' }}>{t('done')}</CustomText>
                                                                 </TouchableOpacity>
                                                             )}
                                                         </View>
@@ -849,7 +850,7 @@ const CreateHive = ({ navigation, route }) => {
                                                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 5 }}>
                                                         <TimerOff width={16} />
                                                         <CustomText weight="semiBold" color="#374151">
-                                                            End Time
+                                                            {t('endTime')}
                                                         </CustomText>
                                                     </View>
 
@@ -859,7 +860,7 @@ const CreateHive = ({ navigation, route }) => {
                                                     >
                                                         <View style={styles.input} pointerEvents="none">
                                                             <TextInput
-                                                                placeholder="Select Time"
+                                                                placeholder={t('selectTime')}
                                                                 value={formatTime(endTime)}
                                                                 editable={false}
                                                                 style={{ color: '#000' }}
@@ -886,7 +887,7 @@ const CreateHive = ({ navigation, route }) => {
                                                                         marginTop: 8
                                                                     }}
                                                                 >
-                                                                    <CustomText weight="bold" style={{ color: '#fff' }}>Done</CustomText>
+                                                                    <CustomText weight="bold" style={{ color: '#fff' }}>{t('done')}</CustomText>
                                                                 </TouchableOpacity>
                                                             )}
                                                         </View>
@@ -905,7 +906,7 @@ const CreateHive = ({ navigation, route }) => {
 
                                     <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center', marginBottom: 12 }}>
                                         <Shield color='#5B0064' />
-                                        <CustomText weight='bold' style={{ fontSize: 16 }}>Messaging & Comments</CustomText>
+                                        <CustomText weight='bold' style={{ fontSize: 16 }}>{t('messagingAndComments')}</CustomText>
                                     </View>
 
                                     {/* Enable Messaging */}
@@ -931,9 +932,9 @@ const CreateHive = ({ navigation, route }) => {
                                         </View>
 
                                         <View style={{ flex: 1, marginLeft: 12 }}>
-                                            <CustomText weight='bold' style={{ fontSize: 16 }}>Enable Messaging</CustomText>
+                                            <CustomText weight='bold' style={{ fontSize: 16 }}>{t('enableMessaging')}</CustomText>
                                             <CustomText weight='medium' style={{ color: '#374151' }}>
-                                                Allow members to post messages and comment on photos
+                                                {t('enableMessagingDesc')}
                                             </CustomText>
                                         </View>
                                     </TouchableOpacity>
@@ -961,9 +962,9 @@ const CreateHive = ({ navigation, route }) => {
                                         </View>
 
                                         <View style={{ flex: 1, marginLeft: 12 }}>
-                                            <CustomText weight='bold' style={{ fontSize: 16 }}>Admin Message Control</CustomText>
+                                            <CustomText weight='bold' style={{ fontSize: 16 }}>{t('adminMessageControl')}</CustomText>
                                             <CustomText weight='medium' style={{ color: '#374151' }}>
-                                                Allow admin to remove member messages
+                                                {t('adminMessageControlDesc')}
                                             </CustomText>
                                         </View>
                                     </TouchableOpacity>
@@ -972,7 +973,7 @@ const CreateHive = ({ navigation, route }) => {
                                         <Info color='#5AAF9A' />
                                         <View style={{ flex: 1, marginLeft: 12 }}>
                                             <CustomText weight='medium' style={{ color: '#5AAF9A' }}>
-                                                Members will be able to react with emojis and comments.
+                                                {t('messagingInfo')}
                                             </CustomText>
                                         </View>
                                     </View>
@@ -1007,9 +1008,9 @@ const CreateHive = ({ navigation, route }) => {
                                     <TouchableWithoutFeedback onPress={() => setShowPrivacyModal(true)}>
                                         <View style={{ paddingHorizontal: 20 }}>
                                             <CustomText weight="medium" style={{ color: '#646464' }}>
-                                                I have read the
-                                                <CustomText weight="bold" style={{ textDecorationLine: 'underline' }}> Content Responsibility & Privacy Policy </CustomText>
-                                                and agree that I am responsible for all content uploaded to my event hive.
+                                                {t('privacyPolicyAgreement')}
+                                                <CustomText weight="bold" style={{ textDecorationLine: 'underline' }}> {t('privacyPolicyLink')} </CustomText>
+                                                {t('privacyPolicyAgreementEnd')}
                                             </CustomText>
                                         </View>
                                     </TouchableWithoutFeedback>
@@ -1019,7 +1020,7 @@ const CreateHive = ({ navigation, route }) => {
 
                                 <View style={{}}>
                                     <ThemeButton
-                                        text="Create Hive"
+                                        text={t('createHive')}
                                         onPress={handleCreateHive}
                                         style={{
                                             width: "100%",

@@ -11,6 +11,7 @@ import CustomText from '../components/CustomText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 
 // assets
 const hero = require('../../assets/hero.png');
@@ -31,13 +32,19 @@ const Home = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
 
   // Start background transition animation
-  useEffect(() => {
+useFocusEffect(
+  useCallback(() => {
+    // Reset animation to start
+    fadeAnim.setValue(0);
+    
+    // Start the transition animation
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 1200, // 1.2 seconds transition
+      duration: 1500,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fadeAnim])
+);
 
   // Format date → DD/MM/YYYY
   const formatDisplayDate = (date) => {
@@ -277,7 +284,7 @@ const Home = ({ navigation, route }) => {
             <Animated.View
               style={{
                 ...StyleSheet.absoluteFillObject,
-                backgroundColor: '#ec9e00ff',
+                backgroundColor: '#db6abdff',
                 opacity: fadeAnim.interpolate({
                   inputRange: [0, 1],
                   outputRange: [1, 0],

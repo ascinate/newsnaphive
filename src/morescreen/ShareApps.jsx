@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableWithoutFeedback } from "react-native";
-import FolderLayout from "./FolderLayout";
+import FolderLayout from "../screen/FolderLayout";
 import Cloud from "../../assets/svg/cloud.svg";
 import QR from "../../assets/svg/qr.svg";
 import ShareApp from "../../assets/svg/shareApp.svg";
