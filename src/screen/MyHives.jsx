@@ -141,6 +141,7 @@ const MyHives = ({ navigation, route }) => {
                                             hiveId: item._id,
                                             date: item.createdAt,
                                             owner: item.ownerName,
+                                             eventDescription: item.description,
                                             photos: item.photos || [],
                                         })
                                     }

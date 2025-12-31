@@ -411,6 +411,7 @@ const CreateHive = ({ navigation, route }) => {
                                     value={hiveName}
                                     onChangeText={setHiveName}
                                     onSubmitEditing={() => Keyboard.dismiss()}
+                                      maxLength={23} 
                                 />
                             </View>
 
@@ -426,6 +427,7 @@ const CreateHive = ({ navigation, route }) => {
                                     value={hiveDescription}
                                     onChangeText={setHiveDescription}
                                     onSubmitEditing={() => Keyboard.dismiss()}
+                                          maxLength={50} 
                                 />
                             </View>
 

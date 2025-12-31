@@ -370,7 +370,7 @@ const FolderLayout = ({ navigation, route }) => {
       folderName="Janifer Danis"
       date="+91 1841 510 1450"
       RightIcon={
-        <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)}>
+        <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)} >
           <EllipsisVertical height={width * 0.04} width={width * 0.04} />
         </TouchableOpacity>
       }
@@ -379,7 +379,7 @@ const FolderLayout = ({ navigation, route }) => {
           <CustomText weight="bold" style={{ color: '#fff', fontSize: width * 0.075 }}>
             {eventTitle || folderName || '2025 Picnic'}
           </CustomText>
-          <CustomText weight="medium" style={{ color: '#fff', fontSize: width * 0.035, marginBottom: height * 0.025 }}>
+          <CustomText weight="medium" style={{ color: '#fff', fontSize: width * 0.035, marginBottom: height * 0.025,textAlign: 'center' }}>
             {eventDescription || 'It is a long established fact that'}
           </CustomText>
 
