@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, TouchableWithoutFeedback, } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableWithoutFeedback, SafeAreaView, } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Logo from '../components/Logo';
 import ThemeButton from '../components/ThemeButton';
 import CustomText from '../components/CustomText';
 import { forgotpassword } from '../API/API';
 import Toast from 'react-native-toast-message';
+import { ChevronLeft } from 'lucide-react-native';
 const Login = ({ navigation }) => {
   const [userID, setUserID] = useState('');
 
@@ -41,7 +42,14 @@ Toast.show({
 
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={styles.container} edges={['top', 'bottom']}>
+
+      <View style={styles.backButton}>
+        <TouchableWithoutFeedback onPress={() => navigation.goBack()} style={{ alignSelf: 'flex-start', marginBottom: 20 }}>
+        <ChevronLeft width={30} height={30} />
+        </TouchableWithoutFeedback>
+      </View>
+
       <Logo />
       <CustomText weight='medium' style={styles.description}>
         Reset your password to regain access to your account
@@ -95,6 +103,12 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     paddingLeft: 27,
   },
+    backButton: {
+  position: 'absolute',
+  top: 50,          
+  left: 20,
+  zIndex: 10,
+},
 });
 
 export default Login;

@@ -7,6 +7,7 @@ import CustomText from '../components/CustomText';
 import { resetpassword } from '../API/API';
 import { resendOtp } from '../API/API';
 import Toast from 'react-native-toast-message';
+import { ChevronLeft } from 'lucide-react-native';
 
 const NewPassword = ({ navigation, route }) => {
   const { email } = route.params;
@@ -62,6 +63,12 @@ const NewPassword = ({ navigation, route }) => {
 
   return (
     <SafeAreaProvider style={styles.container}>
+
+      <View style={styles.backButton}>
+        <TouchableWithoutFeedback onPress={() => navigation.goBack()} style={{ alignSelf: 'flex-start', marginBottom: 20 }}>
+          <ChevronLeft width={30} height={30} />
+        </TouchableWithoutFeedback>
+      </View>
       <Logo />
 
       <TextInput
@@ -74,26 +81,26 @@ const NewPassword = ({ navigation, route }) => {
       />
 
       <View style={{ width: '97%', marginTop: 10 }}>
-<TouchableWithoutFeedback
-  onPress={async () => {
-    try {
-      const { data } = await resendOtp({ email });
+        <TouchableWithoutFeedback
+          onPress={async () => {
+            try {
+              const { data } = await resendOtp({ email });
 
-      Toast.show({
-        type: 'success',
-        text1: 'OTP Resent',
-        text2: data.message || 'Check your email',
-      });
+              Toast.show({
+                type: 'success',
+                text1: 'OTP Resent',
+                text2: data.message || 'Check your email',
+              });
 
-    } catch (err) {
-      Toast.show({
-        type: 'error',
-        text1: 'Failed',
-        text2: err.response?.data?.message || 'Failed to resend OTP',
-      });
-    }
-  }}
->
+            } catch (err) {
+              Toast.show({
+                type: 'error',
+                text1: 'Failed',
+                text2: err.response?.data?.message || 'Failed to resend OTP',
+              });
+            }
+          }}
+        >
 
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <CustomText weight='medium' style={{ color: '#5e5e5e' }}>
@@ -156,6 +163,12 @@ const styles = StyleSheet.create({
     paddingLeft: 27,
   },
   description: { fontSize: 16, color: '#646464', textAlign: 'center', width: '100%' },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+  },
 });
 
 export default NewPassword;

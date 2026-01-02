@@ -45,7 +45,7 @@ const OTP = ({ navigation, route }) => {
       });
       return;
     }
-    showLoader(); 
+    showLoader();
 
     try {
       const res = await verifyOtp({ email, otp: finalOtp });
@@ -55,7 +55,7 @@ const OTP = ({ navigation, route }) => {
         await AsyncStorage.setItem('token', res.data.token);
         await AsyncStorage.setItem('user', JSON.stringify(res.data.user));
 
-        hideLoader(); 
+        hideLoader();
 
         Toast.show({
           type: "success",
@@ -93,10 +93,11 @@ const OTP = ({ navigation, route }) => {
   return (
     <SafeAreaProvider style={styles.container}>
 
-{/* 
-      <View>
-        <ChevronLeft />
-      </View> */}
+      <View style={styles.backButton}>
+        <TouchableWithoutFeedback onPress={() => navigation.goBack()} style={{ alignSelf: 'flex-start', marginBottom: 20 }}>
+        <ChevronLeft width={30} height={30} />
+        </TouchableWithoutFeedback>
+      </View>
       <View style={styles.flex}>
         <CustomText weight="medium" style={styles.title}>Enter Code</CustomText>
       </View>
@@ -231,6 +232,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  backButton: {
+  position: 'absolute',
+  top: 50,          
+  left: 20,
+  zIndex: 10,
+},
+
 });
 
 export default OTP;
