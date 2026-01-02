@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, Alert, StyleSheet, TextInput, TouchableWithoutFeedback } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ThemeButton from '../components/ThemeButton';

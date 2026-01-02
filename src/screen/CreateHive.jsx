@@ -10,13 +10,13 @@ import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLoader } from "../context/LoaderContext";
 import { useTranslation } from 'react-i18next';
+import Toast from 'react-native-toast-message';
 // components
 import TopNav from '../components/TopNavbar';
 import CustomText from '../components/CustomText';
 import ThemeButton from '../components/ThemeButton';
 import { colors } from '../Theme/theme';
 import PrivacyPolicyModal from '../components/PrivacyPolicyModal';
-import Toast from "react-native-toast-message";
 import AppModal from "../components/AppModal";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
