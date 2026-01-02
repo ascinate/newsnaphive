@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   Text,
-  Alert,
   TextInput,
   TouchableWithoutFeedback,
 } from "react-native";
@@ -33,7 +32,7 @@ const { width, height } = Dimensions.get("window");
 import { useLoader } from "../context/LoaderContext";
 import { useTranslation } from 'react-i18next';
 import axios from "axios";
-
+import Toast from 'react-native-toast-message';
 // SVGs
 import QR from "../../assets/svg/qr.svg";
 
@@ -199,85 +198,114 @@ const FolderLayout = ({ navigation, route }) => {
       }
     }
   };
-  const handleUpload = async () => {
-    const options = {
-      mediaType: "photo",
-      includeBase64: false,
-      quality: 0.5,
-      selectionLimit: 0,
-      maxWidth: 1920,
-      maxHeight: 1920,
-    };
-
-    launchImageLibrary(options, async (response) => {
-      if (response.didCancel || response.errorCode) return;
-      if (!response.assets || response.assets.length === 0) return;
-
-      showLoader(); //  Show loader before starting upload
-
-      try {
-        const token = await AsyncStorage.getItem("token");
-
-        if (!token) {
-          hideLoader();
-          Alert.alert("Error", "Authentication token not found. Please login again.");
-          return;
-        }
-
-        let formData = new FormData();
-
-        response.assets.forEach((img, index) => {
-          const file = {
-            uri: img.uri,
-            type: img.type || "image/jpeg",
-            name: img.fileName || `image_${Date.now()}_${index}.jpg`,
-          };
-          formData.append("images", file);
-        });
-
-        const res = await axios.post(
-          `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-            timeout: 60000,
-          }
-        );
-
-        const updatedImages = res.data.images;
-        setUploadedImages(updatedImages);
-
-        setEvents((prevEvents) =>
-          prevEvents.map((event) =>
-            event._id === hiveId ? { ...event, images: updatedImages } : event
-          )
-        );
-
-        Alert.alert("Success", `${response.assets.length} image(s) uploaded successfully!`);
-      } catch (error) {
-        console.log("Upload Error:", error.response?.data || error.message);
-
-        if (error.response) {
-          if (error.response.status === 403) {
-            Alert.alert("Upload Failed", "Permission denied.");
-          } else if (error.response.status === 413) {
-            Alert.alert("Upload Failed", "Images too large.");
-          } else {
-            Alert.alert("Upload Failed", error.response.data?.message || "Something went wrong.");
-          }
-        } else if (error.code === "ECONNABORTED") {
-          Alert.alert("Upload Failed", "Upload timeout. Check your internet connection.");
-        } else {
-          Alert.alert("Upload Failed", "Network error.");
-        }
-      } finally {
-        hideLoader(); //  Always hide loader at the end
-      }
-    });
+const handleUpload = async () => {
+  const options = {
+    mediaType: "photo",
+    includeBase64: false,
+    quality: 0.5,
+    selectionLimit: 0,
+    maxWidth: 1920,
+    maxHeight: 1920,
   };
+
+  launchImageLibrary(options, async (response) => {
+    if (response.didCancel || response.errorCode) return;
+    if (!response.assets || response.assets.length === 0) return;
+
+    showLoader(); // 🔄 Show loader before upload
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        hideLoader();
+        Toast.show({
+          type: "error",
+          text1: "Session Expired",
+          text2: "Please login again",
+        });
+        return;
+      }
+
+      let formData = new FormData();
+
+      response.assets.forEach((img, index) => {
+        formData.append("images", {
+          uri: img.uri,
+          type: img.type || "image/jpeg",
+          name: img.fileName || `image_${Date.now()}_${index}.jpg`,
+        });
+      });
+
+      const res = await axios.post(
+        `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+          timeout: 60000,
+        }
+      );
+
+      const updatedImages = res.data.images;
+      setUploadedImages(updatedImages);
+
+      setEvents((prevEvents) =>
+        prevEvents.map((event) =>
+          event._id === hiveId ? { ...event, images: updatedImages } : event
+        )
+      );
+
+      Toast.show({
+        type: "success",
+        text1: "Upload Successful",
+        text2: `${response.assets.length} image(s) uploaded`,
+        visibilityTime: 2500,
+      });
+
+    } catch (error) {
+      console.log("Upload Error:", error.response?.data || error.message);
+
+      if (error.response) {
+        if (error.response.status === 403) {
+          Toast.show({
+            type: "error",
+            text1: "Upload Failed",
+            text2: "Permission denied",
+          });
+        } else if (error.response.status === 413) {
+          Toast.show({
+            type: "error",
+            text1: "Upload Failed",
+            text2: "Images too large",
+          });
+        } else {
+          Toast.show({
+            type: "error",
+            text1: "Upload Failed",
+            text2: error.response.data?.message || "Something went wrong",
+          });
+        }
+      } else if (error.code === "ECONNABORTED") {
+        Toast.show({
+          type: "error",
+          text1: "Upload Timeout",
+          text2: "Check your internet connection",
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Network Error",
+          text2: "Please try again",
+        });
+      }
+    } finally {
+      hideLoader(); // ✅ Always hide loader
+    }
+  });
+};
 
 
   const members = [

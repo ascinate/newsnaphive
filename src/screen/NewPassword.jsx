@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, TouchableWithoutFeedback, Alert } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableWithoutFeedback, } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Logo from '../components/Logo';
 import ThemeButton from '../components/ThemeButton';
 import CustomText from '../components/CustomText';
 import { resetpassword } from '../API/API';
 import { resendOtp } from '../API/API';
-
+import Toast from 'react-native-toast-message';
 
 const NewPassword = ({ navigation, route }) => {
   const { email } = route.params;
@@ -15,11 +15,20 @@ const NewPassword = ({ navigation, route }) => {
 
   const handleResetPassword = async () => {
     if (!OTP.trim()) {
-      Alert.alert("Error", "Please enter your OTP");
+      Toast.show({
+        type: 'error',
+        text1: 'OTP Required',
+        text2: 'Please enter the OTP sent to your email',
+      });
       return;
     }
+
     if (!password.trim()) {
-      Alert.alert("Error", "Please enter a new password");
+      Toast.show({
+        type: 'error',
+        text1: 'Password Required',
+        text2: 'Please enter a new password',
+      });
       return;
     }
 
@@ -29,17 +38,27 @@ const NewPassword = ({ navigation, route }) => {
         otp: OTP,
         newPassword: password,
       });
-      Alert.alert("Success", data.message, [
-        { text: "OK", onPress: () => navigation.navigate("Login") },
-      ]);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Password Reset',
+        text2: data.message || 'Password reset successfully',
+      });
+
+      // 👇 Let toast show, then navigate
+      setTimeout(() => {
+        navigation.navigate('Login');
+      }, 1000);
+
     } catch (err) {
-      console.log("Reset Error:", err.response?.data || err.message);
-      Alert.alert(
-        "Error",
-        err.response?.data?.message || "Something went wrong"
-      );
+      Toast.show({
+        type: 'error',
+        text1: 'Reset Failed',
+        text2: err.response?.data?.message || 'Something went wrong',
+      });
     }
   };
+
 
   return (
     <SafeAreaProvider style={styles.container}>
@@ -54,27 +73,40 @@ const NewPassword = ({ navigation, route }) => {
         autoCapitalize='none'
       />
 
-    <View style={{ width: '97%', marginTop: 10 }}>
-    <TouchableWithoutFeedback onPress={async () => {
-        try {
-        const { data } = await resendOtp({ email });
-        Alert.alert("Success", data.message);
-        } catch (err) {
-        Alert.alert("Error", err.response?.data?.message || "Failed to resend OTP");
-        }
-     }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <CustomText weight='medium' style={{ color: '#5e5e5e' }}>
-            Didn't get a code?
-        </CustomText>
-        <CustomText weight='medium' style={{ color: '#111a94', marginLeft: 4 }}>
-            Resend
-        </CustomText>
-        </View>
-    </TouchableWithoutFeedback>
-    </View>
+      <View style={{ width: '97%', marginTop: 10 }}>
+<TouchableWithoutFeedback
+  onPress={async () => {
+    try {
+      const { data } = await resendOtp({ email });
 
-      
+      Toast.show({
+        type: 'success',
+        text1: 'OTP Resent',
+        text2: data.message || 'Check your email',
+      });
+
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed',
+        text2: err.response?.data?.message || 'Failed to resend OTP',
+      });
+    }
+  }}
+>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <CustomText weight='medium' style={{ color: '#5e5e5e' }}>
+              Didn't get a code?
+            </CustomText>
+            <CustomText weight='medium' style={{ color: '#111a94', marginLeft: 4 }}>
+              Resend
+            </CustomText>
+          </View>
+        </TouchableWithoutFeedback>
+      </View>
+
+
 
       <TextInput
         style={styles.emailInput}

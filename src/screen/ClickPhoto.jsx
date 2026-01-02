@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Text, Platform, PermissionsAndroid, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Text, Platform, PermissionsAndroid, } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
@@ -72,7 +72,12 @@ const ClickPhoto = ({ navigation }) => {
                 }
 
                 if (!granted && apiLevel < 29) {
-                    Alert.alert('Permission Denied', 'Cannot save photo without permission.');
+Toast.show({
+  type: 'error',
+  text1: 'Permission Denied',
+  text2: 'Cannot save photo without permission',
+});
+
                     setIsSaving(false);
                     return null;
                 }
@@ -83,7 +88,12 @@ const ClickPhoto = ({ navigation }) => {
             return savedPhoto;
         } catch (error) {
             console.error('Failed to save photo:', error);
-            Alert.alert('Error', 'Failed to save photo to gallery');
+Toast.show({
+  type: 'error',
+  text1: 'Save Failed',
+  text2: 'Failed to save photo to gallery',
+});
+
             setIsSaving(false);
             return null;
         }
@@ -105,7 +115,12 @@ const ClickPhoto = ({ navigation }) => {
                 await savePhotoToGallery(photoPath);
             } catch (error) {
                 console.error('Failed to take photo:', error);
-                Alert.alert('Error', 'Failed to capture photo');
+Toast.show({
+  type: 'error',
+  text1: 'Camera Error',
+  text2: 'Failed to capture photo',
+});
+
             }
         }
     };
@@ -157,7 +172,12 @@ const ClickPhoto = ({ navigation }) => {
             console.log('Crop applied:', cropDataFromModal);
         } catch (error) {
             console.error('Crop failed:', error);
-            Alert.alert('Error', 'Failed to apply crop');
+ Toast.show({
+  type: 'error',
+  text1: 'Crop Failed',
+  text2: 'Failed to apply crop',
+});
+
         }
     };
 

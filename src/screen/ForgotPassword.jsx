@@ -1,31 +1,44 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, TouchableWithoutFeedback, Alert } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableWithoutFeedback, } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Logo from '../components/Logo';
 import ThemeButton from '../components/ThemeButton';
 import CustomText from '../components/CustomText';
 import { forgotpassword } from '../API/API';
-
+import Toast from 'react-native-toast-message';
 const Login = ({ navigation }) => {
   const [userID, setUserID] = useState('');
 
-  const handleSendOTP = async () => {
-    if (!userID.trim()) {
-      Alert.alert("Error", "Please enter your registered email");
-      return;
-    }
+const handleSendOTP = async () => {
+  if (!userID.trim()) {
+    Toast.show({
+      type: 'error',
+      text1: 'Missing Email',
+      text2: 'Please enter your registered email',
+    });
+    return;
+  }
 
-    try {
-      const { data } = await forgotpassword({ email: userID });
-      Alert.alert("Success", data.message);
-      navigation.navigate("NewPassword", { email: userID });
-    } catch (err) {
-      Alert.alert(
-        "Error",
-        err.response?.data?.message || "Something went wrong"
-      );
-    }
-  };
+  try {
+    const { data } = await forgotpassword({ email: userID });
+
+Toast.show({
+  type: 'success',
+  text1: 'OTP Sent',
+  visibilityTime: 2000,
+});
+
+    navigation.navigate("NewPassword", { email: userID });
+
+  } catch (err) {
+    Toast.show({
+      type: 'error',
+      text1: 'Error',
+      text2: err.response?.data?.message || 'Something went wrong',
+    });
+  }
+};
+
 
   return (
     <SafeAreaProvider style={styles.container}>

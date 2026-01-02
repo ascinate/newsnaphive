@@ -244,7 +244,6 @@ import {
     TouchableOpacity,
     Image,
     Text,
-    Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Alert, StyleSheet, TextInput, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableWithoutFeedback, Text } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,6 +9,7 @@ import { verifyOtp } from '../API/API';
 import { resendOtp } from '../API/API';
 import { useLoader } from '../context/LoaderContext';
 import AppModal from "../components/AppModal";
+import { ChevronLeft } from 'lucide-react-native';
 const OTP = ({ navigation, route }) => {
   const { email } = route.params || {};
   const [otp, setOtp] = useState(['', '', '', '']);
@@ -91,6 +92,11 @@ const OTP = ({ navigation, route }) => {
 
   return (
     <SafeAreaProvider style={styles.container}>
+
+{/* 
+      <View>
+        <ChevronLeft />
+      </View> */}
       <View style={styles.flex}>
         <CustomText weight="medium" style={styles.title}>Enter Code</CustomText>
       </View>

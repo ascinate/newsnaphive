@@ -19,6 +19,7 @@ import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { useFocusEffect } from '@react-navigation/native';
 import TopNav from '../components/TopNavbar';
 import ThemeButton from '../components/ThemeButton';
+import Toast from 'react-native-toast-message';
 
 
 const { width, height } = Dimensions.get('window');
@@ -88,9 +89,10 @@ const PhotoShare = ({ navigation, route }) => {
   const loadPhotos = async () => {
     try {
       setLoading(true);
+
       const photos = await CameraRoll.getPhotos({
-        first: 999999, // Number of photos to fetch
-        assetType: 'Photos', // Only photos, not videos
+        first: 999999,
+        assetType: 'Photos',
         include: ['filename', 'imageSize', 'playableDuration'],
       });
 
@@ -99,17 +101,21 @@ const PhotoShare = ({ navigation, route }) => {
         timestamp: edge.node.timestamp,
       }));
 
-      // Sort by timestamp (most recent first)
       photoUris.sort((a, b) => b.timestamp - a.timestamp);
 
       setImages(photoUris);
-      setLoading(false);
     } catch (error) {
       console.error('Error loading photos:', error);
-      Alert.alert('Error', 'Failed to load photos from your device.');
+      Toast.show({
+        type: 'error',
+        text1: 'Gallery Error',
+        text2: 'Failed to load photos from your device',
+      });
+    } finally {
       setLoading(false);
     }
   };
+
 
   // Initial permission check
   useEffect(() => {
@@ -121,10 +127,12 @@ const PhotoShare = ({ navigation, route }) => {
         await loadPhotos();
       } else {
         setLoading(false);
-        Alert.alert(
-          'Permission Required',
-          'This app needs access to your photos to display them in the gallery.'
-        );
+        Toast.show({
+          type: 'error',
+          text1: 'Permission Required',
+          text2: 'Please allow photo access to view your gallery',
+        });
+
       }
     };
 

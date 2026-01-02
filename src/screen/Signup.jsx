@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   useWindowDimensions,
-  Alert,
   ScrollView,
   Dimensions,
   SafeAreaView, // <-- Use RN built-in SafeAreaView

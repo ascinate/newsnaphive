@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { launchImageLibrary } from "react-native-image-picker";
@@ -25,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import ScreenLayout from "../components/ScreenLayout";
 import CustomText from "../components/CustomText";
 import PremiumModal from "../components/PremiumModal";
+import Toast from 'react-native-toast-message';
 
 // Images
 const beforeImage = require("../../assets/selfie.jpg");
@@ -42,9 +42,13 @@ const Profile = ({ navigation, }) => {
 
     const url = Platform.OS === "ios" ? appStoreUrl : playStoreUrl;
 
-    Linking.openURL(url).catch(() =>
-      Alert.alert("Error", "Unable to open the store")
-    );
+Linking.openURL(url).catch(() => {
+  Toast.show({
+    type: 'error',
+    text1: 'Error',
+    text2: 'Unable to open the store',
+  });
+});
   };
 
   const [user, setUser] = useState(null);
@@ -72,21 +76,36 @@ const Profile = ({ navigation, }) => {
   };
 
 
-  const handleLogout = async () => {
-    try {
-      showLoader();
+const handleLogout = async () => {
+  try {
+    showLoader();
 
-      await AsyncStorage.removeItem("token");
-      await AsyncStorage.removeItem("user");
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
 
+    Toast.show({
+      type: 'success',
+      text1: 'Logged Out',
+      text2: 'See you again 👋',
+    });
+
+    setTimeout(() => {
       navigation.replace("Login");
-    } catch (err) {
-      Alert.alert("Error", "Failed to logout. Please try again.");
-      console.error("Logout error:", err);
-    } finally {
-      hideLoader();
-    }
-  };
+    }, 500);
+
+  } catch (err) {
+    Toast.show({
+      type: 'error',
+      text1: 'Logout Failed',
+      text2: 'Please try again',
+    });
+    console.error("Logout error:", err);
+  } finally {
+    hideLoader();
+  }
+};
+
+
 
 
   return (
