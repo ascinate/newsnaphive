@@ -13,9 +13,9 @@ import Back from "../../assets/svg/back.svg";
 import { Upload, UserPlus, Users, MessageCircle, Settings } from "lucide-react-native";
 import ThemeButton from "../components/ThemeButton";
 import { launchImageLibrary } from "react-native-image-picker";
+const profile = require('../../assets/profile.jpg');
 
 
-const picnic1 = require("../../assets/picnic1.jpg");
 
 const FolderLayout = ({ navigation, route }) => {
   const { image, folderName, date, owner, photos = [] } = route.params || {};
@@ -46,7 +46,7 @@ const FolderLayout = ({ navigation, route }) => {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       {/* Header Image */}
       <View style={styles.imageWrapper}>
-        <Image source={image ? image : picnic1} style={styles.folderImage} />
+        <Image source={image ? image : profile} style={styles.folderImage} />
 
         {/* Top Bar (Back & Settings) */}
         <View style={styles.topBar}>

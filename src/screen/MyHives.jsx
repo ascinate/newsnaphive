@@ -35,7 +35,7 @@ import CustomText from '../components/CustomText';
 import { useTranslation } from 'react-i18next';
 import SearchBar from '../components/SearchBar';
 // assets
-const picnic1 = require('../../assets/picnic1.jpg');
+
 
 const { width, height } = Dimensions.get('window');
 

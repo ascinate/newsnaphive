@@ -12,7 +12,7 @@ import CustomText from "../components/CustomText";
 const { width, height } = Dimensions.get("window");
 
 const createEvent = require("../../assets/background.png");
-const profilePic = require("../../assets/picnic3.jpg");
+const profilePic = require("../../assets/profile.jpg");
 
 const MemberStatus = ({ navigation }) => {
   const [members, setMembers] = useState([

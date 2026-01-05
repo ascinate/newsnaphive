@@ -26,10 +26,7 @@ const CreateEventTwo = ({ navigation, route }) => {
     owner: "NA",
   };
 
-  const picnic1 = require("../../assets/picnic1.jpg");
-  const picnic2 = require("../../assets/picnic2.jpg");
-  const picnic3 = require("../../assets/picnic3.jpg");
-  const picnic4 = require("../../assets/picnic4.jpg");
+
 
   return (
     <FolderLayout

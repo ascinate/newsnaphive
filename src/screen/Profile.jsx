@@ -30,7 +30,7 @@ import Toast from 'react-native-toast-message';
 const beforeImage = require("../../assets/selfie.jpg");
 const afterImage = require("../../assets/dp3.jpg");
 const createEvent = require("../../assets/background.png");
-const profilePic = require("../../assets/picnic3.jpg");
+const profilePic = require("../../assets/profile.jpg");
 
 const Profile = ({ navigation, }) => {
   const { t, i18n } = useTranslation();

@@ -21,7 +21,7 @@ const flag2 = require("../../assets/flag2.png");
 const flag3 = require("../../assets/flag3.png");
 const flag4 = require("../../assets/flag4.png");
 const createEvent = require("../../assets/background.png");
-const profilePic = require("../../assets/picnic3.jpg");
+const profilePic = require("../../assets/profile.jpg");
 
 const PendingRequest = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);

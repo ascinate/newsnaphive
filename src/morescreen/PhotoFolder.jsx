@@ -6,10 +6,7 @@ import ThemeButton from "../components/ThemeButton";
 
 // Images
 const createEvent = require("../../assets/createEvent.png");
-const picnic1 = require("../../assets/picnic1.jpg");
-const picnic2 = require("../../assets/picnic2.jpg");
-const picnic3 = require("../../assets/picnic3.jpg");
-const picnic4 = require("../../assets/picnic4.jpg");
+
 
 const PhotoFolder = ({ navigation, route }) => {
   const [code, setCode] = useState("");

@@ -15,7 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 // assets
 const hero = require('../../assets/hero.png');
-const picnic1 = require('../../assets/picnic1.jpg');
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -568,7 +568,7 @@ const Home = ({ navigation, route }) => {
 
                           <View style={styles.memberRow}>
                             <View style={styles.memberAvatar}>
-                              <Image source={picnic1} style={styles.memberDP} />
+                              {/* <Image source={picnic1} style={styles.memberDP} /> */}
                             </View>
 
                             <View style={styles.memberBadge}>

@@ -46,7 +46,7 @@ import { EventContext } from '../context/EventContext';
 
 // Images
 const createEvent = require("../../assets/background.png");
-const profilePic = require("../../assets/picnic1.jpg");
+const profilePic = require("../../assets/profile.jpg");
 const dp = require("../../assets/dp.jpg");
 const dp2 = require("../../assets/dp2.webp");
 const dp3 = require("../../assets/dp3.jpg");
@@ -55,7 +55,7 @@ const dp5 = require("../../assets/dp5.jpg");
 const dp6 = require("../../assets/dp6.jpg");
 const dp7 = require("../../assets/dp7.jpg");
 const dp8 = require("../../assets/dp8.jpg");
-const picnic1 = require("../../assets/picnic1.jpg");
+
 
 const FolderLayout = ({ navigation, route }) => {
 
@@ -656,7 +656,7 @@ const handleUpload = async () => {
                   {/* ---- STATIC AI IMAGE ---- */}
                   <View style={styles.userOneMessageBox}>
                     <View style={styles.ImageTextLeft}>
-                      <Image source={picnic1} style={styles.msgImage} />
+                      {/* <Image source={picnic1} style={styles.msgImage} /> */}
                     </View>
                     <CustomText weight="medium" style={{ fontSize: width * 0.025, color: '#888' }}>
                       01:00 am

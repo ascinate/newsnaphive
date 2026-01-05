@@ -21,7 +21,7 @@ const flag3 = require("../../assets/flag3.png");
 const flag4 = require("../../assets/flag4.png");
 // Images
 const createEvent = require("../../assets/background.png");
-const profilePic = require("../../assets/picnic3.jpg");
+const profilePic = require("../../assets/profile.jpg");
 
 const Language = ({ navigation, route }) => {
     const { t, i18n } = useTranslation();

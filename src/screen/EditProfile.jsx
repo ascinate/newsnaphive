@@ -28,7 +28,7 @@ import ThemeButton from "../components/ThemeButton";
 
 // Images
 const createEvent = require("../../assets/background.png");
-const profilePic = require("../../assets/picnic3.jpg");
+const profilePic = require("../../assets/profile.jpg");
 
 const EditScreen = ({ navigation, }) => {
   const [firstName, setFirstName] = useState("");

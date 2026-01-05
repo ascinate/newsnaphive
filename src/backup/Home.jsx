@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 
 // assets
 const hero = require('../../assets/hero.png');
-const picnic1 = require('../../assets/picnic1.jpg');
+
 
 const { width, height } = Dimensions.get('window');
 

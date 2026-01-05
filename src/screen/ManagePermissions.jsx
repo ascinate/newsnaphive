@@ -272,7 +272,7 @@ import ThemeButton from "../components/ThemeButton";
 
 // Images
 const createEvent = require("../../assets/background.png");
-const profilePic = require("../../assets/picnic1.jpg");
+const profilePic = require("../../assets/profile.jpg");
 const dp = require("../../assets/dp.jpg");
 const dp2 = require("../../assets/dp2.webp");
 const dp3 = require("../../assets/dp3.jpg");

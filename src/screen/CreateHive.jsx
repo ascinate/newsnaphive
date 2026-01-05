@@ -23,16 +23,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // assets
 const hero = require('../../assets/hero.png');
-const picnic1 = require('../../assets/picnic1.jpg');
-const picnic2 = require("../../assets/picnic2.jpg");
-const picnic3 = require("../../assets/picnic3.jpg");
-const picnic4 = require("../../assets/picnic4.jpg");
+
 const { width, height } = Dimensions.get('window');
 
 const CreateHive = ({ navigation, route }) => {
     const { t } = useTranslation();
     const { showLoader, hideLoader } = useLoader();
     const [uploadedImage, setUploadedImage] = useState(null);
+    const [selectedStockId, setSelectedStockId] = useState(null);
     const [hiveName, setHiveName] = useState("");
     const [selectedOption, setSelectedOption] = useState('enable')
     const [hiveDescription, setHiveDescription] = useState("");
@@ -104,7 +102,7 @@ const CreateHive = ({ navigation, route }) => {
 
         return `${hours}:${minutes} ${ampm}`;
     };
-    
+
     const data = [
         { label: t('inviteOnly'), value: '1' },
         { label: t('public'), value: '2' },
@@ -154,17 +152,14 @@ const CreateHive = ({ navigation, route }) => {
 
     const handleCreateHive = async () => {
         try {
-            if (isCreateDisabled) {
-                Toast.show({
-                    type: "info",
-                    text1: t('completeAllFields'),
-                    text2: t('completeAllFields'),
-                });
-
-                return;
-            }
-
-
+            // if (isCreateDisabled) {
+            //     Toast.show({
+            //         type: "info",
+            //         text1: t('completeAllFields'),
+            //         text2: t('completeAllFields'),
+            //     });
+            //     return;
+            // }
 
             showLoader();
 
@@ -182,58 +177,22 @@ const CreateHive = ({ navigation, route }) => {
             const formData = new FormData();
             Object.keys(payload).forEach(key => formData.append(key, payload[key]));
 
-            console.log('payload:', payload);
-            let imageUri = uploadedImage;
-            if (typeof uploadedImage === 'number') {
-                const resolved = Image.resolveAssetSource(uploadedImage);
-                imageUri = resolved.uri;
-
-                try {
-                    if (typeof uploadedImage === 'number') {
-                        const resolved = Image.resolveAssetSource(uploadedImage);
-                        imageUri = resolved?.uri || uploadedImage;
-                    }
-
-                    // On Android bundled assets may not be accessible via the resolved uri.
-                    // Try to copy the asset to a temp file using react-native-fs if available.
-                    if (Platform.OS === 'android' && imageUri && !imageUri.startsWith('file://') && !imageUri.startsWith('http')) {
-                        let RNFS = null;
-                        try { RNFS = require('react-native-fs'); } catch (e) { RNFS = null; console.log('react-native-fs not installed'); }
-                        if (RNFS && RNFS.copyFileAssets) {
-                            try {
-                                const assetPath = imageUri.replace(/^asset:\/\/+/, '');
-                                const dest = `${RNFS.CachesDirectoryPath}/cover_${Date.now()}.jpg`;
-                                await RNFS.copyFileAssets(assetPath, dest);
-                                imageUri = `file://${dest}`;
-                            } catch (e) {
-                                console.log('Failed to copy asset to temp file:', e);
-                            }
-                        } else {
-                            console.log('RNFS copy not available, imageUri:', imageUri);
-                        }
-                    }
-                } catch (e) {
-                    console.log('Error resolving image uri', e);
-                }
-
-                console.log('Final cover image uri:', imageUri);
-
+            if (selectedStockId) {
+                formData.append("stockImage", selectedStockId);
+            } else if (uploadedImage) {
+                formData.append("coverImage", {
+                    uri: uploadedImage,
+                    name: "cover.jpg",
+                    type: "image/jpeg",
+                });
             }
-            formData.append("coverImage", {
-                uri: imageUri,
-                name: "cover.jpg",
-                type: "image/jpeg",
-            });
-
             const token = await AsyncStorage.getItem("token");
-
             const response = await fetch("https://snaphive-node.vercel.app/api/hives", {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${token}`,
-
+                    Authorization: `Bearer ${token}`,
                 },
-                body: formData
+                body: formData,
             });
 
             const result = await response.json();
@@ -245,9 +204,9 @@ const CreateHive = ({ navigation, route }) => {
                     text1: t('somethingWentWrong'),
                     text2: result.message || t('errorCreatingHive'),
                 });
-
                 return;
             }
+
             Toast.show({
                 type: "success",
                 text1: t('hiveCreatedSuccess'),
@@ -266,8 +225,6 @@ const CreateHive = ({ navigation, route }) => {
                 });
             }, 300);
 
-
-
         } catch (error) {
             console.log("Create Hive Error:", error);
             Toast.show({
@@ -275,11 +232,11 @@ const CreateHive = ({ navigation, route }) => {
                 text1: t('somethingWentWrong'),
                 text2: t('somethingWentWrong'),
             });
-
         } finally {
             hideLoader();
         }
     };
+
 
 
 
@@ -411,7 +368,7 @@ const CreateHive = ({ navigation, route }) => {
                                     value={hiveName}
                                     onChangeText={setHiveName}
                                     onSubmitEditing={() => Keyboard.dismiss()}
-                                      maxLength={23} 
+                                    maxLength={23}
                                 />
                             </View>
 
@@ -427,7 +384,7 @@ const CreateHive = ({ navigation, route }) => {
                                     value={hiveDescription}
                                     onChangeText={setHiveDescription}
                                     onSubmitEditing={() => Keyboard.dismiss()}
-                                          maxLength={50} 
+                                    maxLength={50}
                                 />
                             </View>
 
@@ -469,18 +426,21 @@ const CreateHive = ({ navigation, route }) => {
                                         }
 
                                         setUploadedImage(selectedImage.uri);
+                                        setSelectedStockId(null);
+
                                     }
                                 });
 
                             }}>
                                 <View style={styles.uploadContainer}>
-                                    {uploadedImage ? (
+                                    {(uploadedImage || selectedStockId) ? (
                                         <View style={{ width: '100%', height: '100%', borderRadius: 8, overflow: 'hidden' }}>
                                             <Animated.Image
-                                                source={typeof uploadedImage === 'string'
-                                                    ? { uri: uploadedImage }
-                                                    : uploadedImage}
-
+                                                source={{
+                                                    uri: uploadedImage
+                                                        ? uploadedImage
+                                                        : `https://snaphive-node.vercel.app/stock/${selectedStockId}.jpg`,
+                                                }}
                                                 style={{ width: '100%', height: '100%' }}
                                                 resizeMode="cover"
                                             />
@@ -502,40 +462,60 @@ const CreateHive = ({ navigation, route }) => {
                             <View style={styles.imageGrid}>
                                 <TouchableOpacity
                                     style={styles.imageContainer}
-                                    onPress={() => setUploadedImage(picnic1)}
+                                    onPress={() => {
+                                        setSelectedStockId("picnic1");
+                                        setUploadedImage(null);
+                                    }}
+
                                     activeOpacity={0.7}
                                 >
-                                    <Image source={picnic1} style={styles.image} />
+                                    <Image source={{ uri: "https://snaphive-node.vercel.app/stock/picnic1.jpg" }} style={styles.image} />
                                     <View style={styles.overlay}>
                                         <Text style={styles.imageText}>{t('corporate')}</Text>
                                     </View>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.imageContainer} onPress={() => setUploadedImage(picnic2)}>
+                                <TouchableOpacity style={styles.imageContainer} onPress={() => {
+                                    setSelectedStockId("picnic2");
+                                    setUploadedImage(null);
+                                }}
+                                >
 
-                                    <Image source={picnic2} style={styles.image} />
+                                    <Image source={{ uri: "https://snaphive-node.vercel.app/stock/picnic2.jpg" }} style={styles.image} />
                                     <View style={styles.overlay}>
                                         <Text style={styles.imageText}>{t('birthdayParty')}</Text>
                                     </View>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.imageContainer} onPress={() => setUploadedImage(picnic3)}>
+                                <TouchableOpacity style={styles.imageContainer} onPress={() => {
+                                    setSelectedStockId("picnic3");
+                                    setUploadedImage(null);
+                                }}
+                                >
 
-                                    <Image source={picnic3} style={styles.image} />
+                                    <Image source={{ uri: "https://snaphive-node.vercel.app/stock/picnic3.jpg" }} style={styles.image} />
                                     <View style={styles.overlay}>
                                         <Text style={styles.imageText}>{t('wedding')}</Text>
                                     </View>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.imageContainer} onPress={() => setUploadedImage(picnic4)}>
+                                <TouchableOpacity style={styles.imageContainer} onPress={() => {
+                                    setSelectedStockId("picnic4");
+                                    setUploadedImage(null);
+                                }}
+                                >
 
-                                    <Image source={picnic4} style={styles.image} />
+                                    <Image source={{ uri: "https://snaphive-node.vercel.app/stock/picnic4.jpg" }} style={styles.image} />
                                     <View style={styles.overlay}>
                                         <Text style={styles.imageText}>{t('reunion')}</Text>
                                     </View>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.imageContainer} onPress={() => setUploadedImage(picnic1)}>
+                                <TouchableOpacity style={styles.imageContainer} onPress={() => {
+                                    setSelectedStockId("picnic1");
+                                    setUploadedImage(null);
+                                }}
+                                >
 
-                                    <Image source={picnic1} style={styles.image} />
+                                    <Image source={{ uri: "https://snaphive-node.vercel.app/stock/picnic1.jpg" }} style={styles.image} />
                                     <View style={styles.overlay}>
                                         <Text style={styles.imageText}>{t('others')}</Text>
                                     </View>
@@ -1026,7 +1006,7 @@ const CreateHive = ({ navigation, route }) => {
                                         onPress={handleCreateHive}
                                         style={{
                                             width: "100%",
-                                            opacity: isCreateDisabled ? 0.5 : 1,
+                                            // opacity: isCreateDisabled ? 0.5 : 1,
                                         }}
                                         disabled={isCreateDisabled}
 
@@ -1042,12 +1022,12 @@ const CreateHive = ({ navigation, route }) => {
                     />
                 </ScrollView>
                 <AppModal
-  visible={modalVisible}
-  title={modalData.title}
-  message={modalData.message}
-  type={modalData.type}
-  onClose={() => setModalVisible(false)}
-/>
+                    visible={modalVisible}
+                    title={modalData.title}
+                    message={modalData.message}
+                    type={modalData.type}
+                    onClose={() => setModalVisible(false)}
+                />
 
             </SafeAreaView>
         </SafeAreaProvider>

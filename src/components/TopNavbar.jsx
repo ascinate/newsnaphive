@@ -17,7 +17,7 @@ const TopNav = () => {
     <View style={styles.container}>
       <View style={styles.leftSection}>
         <Image source={logo} style={{ width:100, height: 45, resizeMode: "contain", }} />
-
+  <Text >update</Text>
       </View>
 
       <TouchableOpacity
@@ -26,7 +26,6 @@ const TopNav = () => {
       >
         <Bell width={28} height={28} />
         {unreadCount > 0 && (
-
           <View
             style={styles.badge}
           >
