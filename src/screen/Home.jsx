@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 // assets
 const hero = require('../../assets/hero.png');
+const profile = require('../../assets/profile.jpg');
 
 
 const { width, height } = Dimensions.get('window');
@@ -50,43 +51,76 @@ const Home = ({ navigation, route }) => {
   const formatDisplayDate = (date) => {
     if (!date) return 'N/A';
     const dateObj = date instanceof Date ? date : new Date(date);
+
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
     const day = String(dateObj.getDate()).padStart(2, '0');
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const year = dateObj.getFullYear();
-    return `${day}/${month}/${year}`;
+    const month = monthNames[dateObj.getMonth()];
+    const year = String(dateObj.getFullYear()).slice(-2); // Get last 2 digits of year
+
+    return `${month} ${day}`;
   };
 
   // Format time → HH:MM AM/PM
-  const formatDisplayTime = (time) => {
-    if (!time) return 'N/A';
-
-    if (typeof time === 'string') {
-      if (time.toLowerCase().includes('am') || time.toLowerCase().includes('pm')) {
-        return time;
-      }
-    }
+  const formatTimeRemaining = (endTime, expiryDate) => {
+    if (!expiryDate) return 'N/A';
 
     try {
-      const dateObj = time instanceof Date ? time : new Date(time);
+      const now = new Date();
+      const expiryDateTime = new Date(expiryDate);
 
-      if (isNaN(dateObj.getTime())) {
-        return typeof time === 'string' ? time : 'N/A';
+      // If endTime is provided, set the exact time
+      if (endTime) {
+        const timeStr = endTime.toLowerCase();
+        const [time, period] = timeStr.split(' ');
+        const [hours, minutes] = time.split(':').map(Number);
+
+        let hour24 = hours;
+        if (period === 'pm' && hours !== 12) {
+          hour24 = hours + 12;
+        } else if (period === 'am' && hours === 12) {
+          hour24 = 0;
+        }
+
+        expiryDateTime.setHours(hour24, minutes, 0, 0);
+      } else {
+        expiryDateTime.setHours(23, 59, 59, 999);
       }
 
-      let hours = dateObj.getHours();
-      let minutes = dateObj.getMinutes();
-      let ampm = hours >= 12 ? 'PM' : 'AM';
+      const timeDiff = expiryDateTime - now;
 
-      hours = hours % 12;
-      hours = hours ? hours : 12;
-      minutes = minutes < 10 ? '0' + minutes : minutes;
+      // If expired
+      if (timeDiff <= 0) {
+        return 'Expired';
+      }
 
-      return `${hours}:${minutes} ${ampm}`;
+      // Calculate time remaining
+      const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
+      const daysLeft = Math.floor(hoursLeft / 24);
+      const remainingHours = hoursLeft % 24;
+      const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+      // Format output based on time remaining
+      if (daysLeft > 0) {
+        if (remainingHours > 0) {
+          return `${daysLeft}d ${remainingHours}h `;
+        }
+        return `${daysLeft}d `;
+      } else if (hoursLeft > 0) {
+        if (minutesLeft > 0) {
+          return `${hoursLeft}h ${minutesLeft}m `;
+        }
+        return `${hoursLeft}h `;
+      } else {
+        return `${minutesLeft}m `;
+      }
     } catch (error) {
-      return typeof time === 'string' ? time : 'N/A';
+      return 'N/A';
     }
   };
-
   const removeExpiredEvents = useCallback(() => {
     const now = new Date();
 
@@ -549,14 +583,24 @@ const Home = ({ navigation, route }) => {
                           <View style={styles.eventTimeRow}>
                             <CalendarDays width={16} height={16} color="#F98935" />
                             <CustomText weight="medium" style={styles.eventTimeText}>
-                              {formatDisplayTime(item.endTime)} -{" "}
-                              {formatDisplayDate(item.expiryDate)}
+                              {formatTimeRemaining(item.endTime, item.expiryDate)} • {formatDisplayDate(item.expiryDate)}
                             </CustomText>
                           </View>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 6, justifyContent: 'flex-start' }}>
-                            <Lock width={16} height={16} color="#F98935" />
-                            <CustomText weight="medium" style={styles.eventTimeText}>Lock</CustomText>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 4,
+                              marginBottom: 6,
+                              justifyContent: 'flex-start',
+                            }}
+                          >
+                            <Lock width={16} height={16} color="#F98935" style={{display: 'grid'}} />
+                            <CustomText weight="medium" style={styles.eventTimeText}>
+                              Lock
+                            </CustomText>
                           </View>
+
                           <CustomText weight="medium" style={styles.eventDescription}>
                             {item.description
                               ? item.description.length > 15
@@ -568,7 +612,7 @@ const Home = ({ navigation, route }) => {
 
                           <View style={styles.memberRow}>
                             <View style={styles.memberAvatar}>
-                              {/* <Image source={picnic1} style={styles.memberDP} /> */}
+                              <Image source={profile} style={styles.memberDP} />
                             </View>
 
                             <View style={styles.memberBadge}>
@@ -880,7 +924,8 @@ const styles = StyleSheet.create({
   eventTimeText: {
     fontSize: 12,
     color: '#6B7280',
-    paddingRight: 4,
+    paddingBottom: 0,
+    marginBottom: 0,
   },
   eventDescription: {
     fontSize: 13,

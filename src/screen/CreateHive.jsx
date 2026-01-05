@@ -142,24 +142,26 @@ const CreateHive = ({ navigation, route }) => {
             console.log('Received camera photos:', route.params.cameraPhotos.length);
         }
     }, [route?.params?.cameraPhotos]);
-    const isCreateDisabled =
-        !hiveName.trim() ||
-        !uploadedImage ||
-        !checked ||
-        !uploadType ||
-        !hiveType;   // 🔥 NEW VALIDATION
+const isCreateDisabled =
+  !hiveName.trim() ||                 // Hive name required
+  (!uploadedImage && !selectedStockId) || // Image required
+  !hiveType ||                        // Privacy dropdown
+  !uploadType ||                      // Media upload settings
+  !selectedOption ||                  // Messaging settings
+  !checked;                           // Privacy policy
+
 
 
     const handleCreateHive = async () => {
         try {
-            // if (isCreateDisabled) {
-            //     Toast.show({
-            //         type: "info",
-            //         text1: t('completeAllFields'),
-            //         text2: t('completeAllFields'),
-            //     });
-            //     return;
-            // }
+if (isCreateDisabled) {
+  Toast.show({
+    type: "info",
+    text1: t('completeAllFields'),
+    text2: t('completeAllFields'),
+  });
+  return;
+}
 
             showLoader();
 
@@ -1001,17 +1003,13 @@ const CreateHive = ({ navigation, route }) => {
 
 
                                 <View style={{}}>
-                                    <ThemeButton
-                                        text={t('createHive')}
-                                        onPress={handleCreateHive}
-                                        style={{
-                                            width: "100%",
-                                            // opacity: isCreateDisabled ? 0.5 : 1,
-                                        }}
-                                        disabled={isCreateDisabled}
+                                  <ThemeButton
+  text={t('createHive')}
+  onPress={handleCreateHive}
+  disabled={isCreateDisabled}
+  style={{ width: "100%" }}
+/>
 
-
-                                    />
                                 </View>
                             </View>
                         </View>
