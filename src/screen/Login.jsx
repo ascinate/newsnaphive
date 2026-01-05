@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableWithoutFeedback, TouchableHighlight, useWindowDimensions, ActivityIndicator, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TextInput, TouchableWithoutFeedback, TouchableHighlight, useWindowDimensions, ActivityIndicator, Dimensions, ScrollView, Keyboard } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { loginUser } from "../API/API";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -56,6 +56,9 @@ const Login = ({ navigation }) => {
     const isValidPhone = (text) => /^[0-9]{10,15}$/.test(text);
 
     const handleContinue = async () => {
+        Keyboard.dismiss(); 
+        console.log("login");
+        
         if (!userID.trim()) {
             showModal({
                 title: "Missing Information",
@@ -126,6 +129,7 @@ const Login = ({ navigation }) => {
             <ScrollView
                 contentContainerStyle={[styles.container, { paddingHorizontal: 20, paddingBottom: 40 }]}
                 showsVerticalScrollIndicator={false}
+                 keyboardShouldPersistTaps="handled"
             >
 
 

@@ -8,7 +8,8 @@ import {
   useWindowDimensions,
   ScrollView,
   Dimensions,
-  SafeAreaView, // <-- Use RN built-in SafeAreaView
+  SafeAreaView,
+  Keyboard, // <-- Use RN built-in SafeAreaView
 } from 'react-native';
 import { useLoader } from "../context/LoaderContext";
 import AppModal from "../components/AppModal";
@@ -63,6 +64,7 @@ const Signup = ({ navigation }) => {
 
 
   const handleContinue = () => {
+    Keyboard.dismiss(); 
     if (!userID.trim()) {
       showModal({
         title: "Create Account",
@@ -118,11 +120,11 @@ const Signup = ({ navigation }) => {
           }, 1200);
 
         } else {
-showModal({
-  title: "Signup Failed",
-  message: res.data.message || "Something went wrong",
-  type: "error",
-});
+          showModal({
+            title: "Signup Failed",
+            message: res.data.message || "Something went wrong",
+            type: "error",
+          });
 
         }
       })
@@ -130,11 +132,11 @@ showModal({
         hideLoader(); // ✅ HIDE LOADER (VERY IMPORTANT)
 
         console.log("Register error:", err.response?.data || err.message);
-       showModal({
-  title: "Registration Failed",
-  message: err.response?.data?.message || "Registration failed",
-  type: "error",
-});
+        showModal({
+          title: "Registration Failed",
+          message: err.response?.data?.message || "Registration failed",
+          type: "error",
+        });
 
       });
   };
@@ -145,6 +147,7 @@ showModal({
       <ScrollView
         contentContainerStyle={[styles.container, { paddingHorizontal: 20, paddingBottom: 40 }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <Logo />
 
@@ -277,12 +280,12 @@ showModal({
       </ScrollView>
 
       <AppModal
-  visible={modalVisible}
-  title={modalData.title}
-  message={modalData.message}
-  type={modalData.type}
-  onClose={() => setModalVisible(false)}
-/>
+        visible={modalVisible}
+        title={modalData.title}
+        message={modalData.message}
+        type={modalData.type}
+        onClose={() => setModalVisible(false)}
+      />
 
     </SafeAreaView>
   );
