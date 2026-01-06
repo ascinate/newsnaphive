@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import AutoSyncModal from '../components/AutoSyncModal';
 import { checkForNewCameraPhotos } from '../utils/photoDetector';
-import ImageResizer from "react-native-image-resizer";
+import {ImageResizer} from "react-native-image-resizer";
 // assets
 const hero = require('../../assets/hero.png');
 const profile = require('../../assets/profile.jpg');
