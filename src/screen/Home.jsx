@@ -205,19 +205,24 @@ const Home = ({ navigation, route }) => {
     useCallback(() => {
       const checkPhotos = async () => {
         try {
+          // 🔒 Prevent re-detection if already handled
+          const alreadyHandled = await AsyncStorage.getItem("AUTO_SYNC_HANDLED");
+          if (alreadyHandled === "true") {
+            console.log("🚫 Auto-sync already handled, skipping detection");
+            return;
+          }
+
           console.log('🔍 Checking for new photos...');
           const result = await checkForNewCameraPhotos();
 
           console.log('📊 Result:', {
             hasNewPhotos: result.hasNewPhotos,
             count: result.photoCount,
-            photosLength: result.photos.length
+            photosLength: result.photos.length,
           });
 
           if (result.hasNewPhotos && result.photoCount > 0) {
             const previewUri = result.photos[0]?.uri;
-
-            console.log('✅ Setting photo data, preview:', previewUri ? 'exists' : 'missing');
 
             setNewPhotosData({
               count: result.photoCount,
@@ -225,13 +230,9 @@ const Home = ({ navigation, route }) => {
               previewImage: previewUri || null,
             });
 
-            // Show modal after a short delay
             setTimeout(() => {
-              console.log('📱 Showing AutoSync modal');
               setShowAutoSyncModal(true);
             }, 500);
-          } else {
-            console.log('ℹ️ No new photos found');
           }
         } catch (error) {
           console.error('❌ Error checking photos:', error);
@@ -241,6 +242,7 @@ const Home = ({ navigation, route }) => {
       checkPhotos();
     }, [])
   );
+
 
 
   useEffect(() => {
@@ -753,21 +755,22 @@ const Home = ({ navigation, route }) => {
           onCreate={async () => {
             setShowAutoSyncModal(false);
 
-            // 🔐 STORE detected photos TEMPORARILY
+            // 🔐 STORE detected photos
             await AsyncStorage.setItem(
               "AUTO_SYNC_PHOTOS",
               JSON.stringify(newPhotosData.photos)
             );
 
-            // 👉 Go to CreateHive (NO photos passed)
+            // 🔒 MARK AS HANDLED (VERY IMPORTANT)
+            await AsyncStorage.setItem("AUTO_SYNC_HANDLED", "true");
+
             navigation.navigate("CreateHive");
           }}
-
           onSkip={() => {
-            console.log('⏭️ Skip clicked');
             setShowAutoSyncModal(false);
           }}
         />
+
 
       </SafeAreaView>
     </SafeAreaProvider>
