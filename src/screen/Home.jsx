@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import AutoSyncModal from '../components/AutoSyncModal';
 import { checkForNewCameraPhotos } from '../utils/photoDetector';
+import ImageResizer from "react-native-image-resizer";
 // assets
 const hero = require('../../assets/hero.png');
 const profile = require('../../assets/profile.jpg');
@@ -241,6 +242,28 @@ const Home = ({ navigation, route }) => {
       checkPhotos();
     }, [])
   );
+
+  const compressPhoto = async (photo) => {
+    try {
+      const resized = await ImageResizer.createResizedImage(
+        photo.uri,
+        1600,     // max width
+        1600,     // max height
+        "JPEG",
+        80        // quality (KEY)
+      );
+
+      return {
+        ...photo,
+        uri: resized.uri,
+        type: "image/jpeg",
+        fileName: photo.fileName || "auto_sync.jpg",
+      };
+    } catch (err) {
+      console.log("❌ Compression failed, using original:", err);
+      return photo; // fallback
+    }
+  };
 
 
   useEffect(() => {
@@ -753,13 +776,25 @@ const Home = ({ navigation, route }) => {
           onCreate={async () => {
             setShowAutoSyncModal(false);
 
-            // 🔐 STORE detected photos TEMPORARILY
-            await AsyncStorage.setItem(
-              "AUTO_SYNC_PHOTOS",
-              JSON.stringify(newPhotosData.photos)
+            // 🔥 COMPRESS PHOTOS HERE (CRITICAL)
+            const compressedPhotos = [];
+
+            for (const photo of newPhotosData.photos) {
+              const compressed = await compressPhoto(photo);
+              compressedPhotos.push(compressed);
+            }
+
+            console.log(
+              "📦 AutoSync photos compressed:",
+              compressedPhotos.map(p => p.uri)
             );
 
-            // 👉 Go to CreateHive (NO photos passed)
+            // ✅ STORE COMPRESSED PHOTOS ONLY
+            await AsyncStorage.setItem(
+              "AUTO_SYNC_PHOTOS",
+              JSON.stringify(compressedPhotos)
+            );
+
             navigation.navigate("CreateHive");
           }}
 

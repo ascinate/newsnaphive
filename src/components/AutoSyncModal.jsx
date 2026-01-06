@@ -37,7 +37,7 @@ const AutoSyncModal = ({ visible, onCreate, onSkip, photoCount = 0, previewImage
           <View style={styles.imageStack}>
             <Image
               source={previewImage ? { uri: previewImage } : profile}
-              style={[styles.smallImage, { left: -30, top: 20 }]}
+              style={[styles.smallImage, styles.leftImage]}
             />
             <Image
               source={previewImage ? { uri: previewImage } : profile}
@@ -45,17 +45,16 @@ const AutoSyncModal = ({ visible, onCreate, onSkip, photoCount = 0, previewImage
             />
             <Image
               source={previewImage ? { uri: previewImage } : profile}
-              style={[styles.smallImage, { right: -30, top: 20 }]}
+              style={[styles.smallImage, styles.rightImage]}
             />
           </View>
 
           {/* Title */}
-          <Text style={styles.title}>Auto Sync Photos</Text>
-          <Text style={styles.title}>Photos Found!</Text>
+          <Text style={styles.title}>Auto Sync Photos Found!</Text>
 
           {/* Description */}
           <Text style={styles.description}>
-            We found {photoCount} new {photoCount === 1 ? 'photo' : 'photos'} on your device.
+            We found {photoCount} new {photoCount === 1 ? 'photo' : 'photos'} on your device.{'\n'}
             Create a Hive to auto sync and share them!
           </Text>
 
@@ -66,7 +65,7 @@ const AutoSyncModal = ({ visible, onCreate, onSkip, photoCount = 0, previewImage
               style={styles.previewImage}
             />
             <Text style={styles.previewText}>
-              Create Hive with {photoCount} new {photoCount === 1 ? 'photo' : 'photos'}?
+              Create Hive with {photoCount} new {photoCount === 1 ? 'photo' : 'photos'}
             </Text>
           </View>
 
@@ -76,7 +75,7 @@ const AutoSyncModal = ({ visible, onCreate, onSkip, photoCount = 0, previewImage
           </TouchableOpacity>
 
           {/* Skip */}
-          <TouchableOpacity onPress={onSkip}>
+          <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
             <Text style={styles.skipText}>Skip for now</Text>
           </TouchableOpacity>
 
@@ -91,102 +90,131 @@ export default AutoSyncModal;
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
   container: {
-    width: width * 0.92,
+    width: width * 0.88,
     backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 24,
+    padding: 28,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 8,
   },
 
   /* SnapHive Logo */
   snaphiveLogo: {
-    width: 120,
-    height: 50,
+    width: 100,
+    height: 40,
     resizeMode: "contain",
-    position: "absolute",
-    top: -30,     // ✅ makes it visible above modal
-    zIndex: 10,   // ✅ ensures it stays on top
+    marginBottom: 20,
   },
 
   /* Image Stack */
   imageStack: {
-    height: 120,
-    marginBottom: 10,
+    height: 100,
+    width: '100%',
+    marginBottom: 20,
     justifyContent: "center",
     alignItems: "center",
   },
   mainImage: {
-    width: 90,
-    height: 90,
+    width: 80,
+    height: 80,
     borderRadius: 16,
-    zIndex: 2,
+    borderWidth: 3,
+    borderColor: "#fff",
+    zIndex: 3,
   },
   smallImage: {
     position: "absolute",
-    width: 70,
-    height: 70,
+    width: 64,
+    height: 64,
     borderRadius: 14,
-    opacity: 0.9,
+    borderWidth: 2,
+    borderColor: "#fff",
+    opacity: 0.85,
+  },
+  leftImage: {
+    left: 30,
+    top: 8,
+    zIndex: 1,
+  },
+  rightImage: {
+    right: 30,
+    top: 8,
+    zIndex: 2,
   },
 
   /* Text */
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
-    color: "#111",
-    marginTop: 2,
+    color: "#1a1a1a",
+    marginBottom: 8,
+    textAlign: "center",
   },
   description: {
     textAlign: "center",
-    fontSize: 14,
+    fontSize: 15,
     color: "#666",
-    marginVertical: 12,
-    paddingHorizontal: 10,
+    lineHeight: 22,
+    marginBottom: 20,
+    paddingHorizontal: 8,
   },
 
   /* Preview Card */
   previewCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F6FA",
-    borderRadius: 14,
-    padding: 10,
+    backgroundColor: "#F7F8FA",
+    borderRadius: 16,
+    padding: 14,
     width: "100%",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   previewImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    marginRight: 10,
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    marginRight: 12,
   },
   previewText: {
+    flex: 1,
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: "#2a2a2a",
+    lineHeight: 20,
   },
 
   /* Buttons */
   primaryButton: {
     width: "100%",
     backgroundColor: colors.primary,
-    paddingVertical: 14,
-    borderRadius: 14,
+    paddingVertical: 16,
+    borderRadius: 16,
     alignItems: "center",
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",
   },
+  skipButton: {
+    paddingVertical: 12,
+  },
   skipText: {
-    marginTop: 14,
-    fontSize: 14,
+    fontSize: 15,
     color: colors.primary,
     fontWeight: "600",
   },
