@@ -134,7 +134,7 @@ const App = () => {
                   {/* <Stack.Screen name="ClickPhotoThree" component={ClickPhotoThree} /> */}
                   <Stack.Screen name="FolderLayout" component={FolderLayout} />
                   <Stack.Screen name="MyHives" component={MyHives} />
-                  <Stack.Screen name="AutoCreateHive" component={AutoCreateHive} />
+                  <Stack.Screen name="AutoCreateHive" component={AutoCreateHive}  options={{ headerShown: false }}/>
                   {/* <Stack.Screen name="PendingRequest" component={PendingRequest} /> */}
                   {/* <Stack.Screen name="MemberStatus" component={MemberStatus} /> */}
                 </Stack.Navigator>

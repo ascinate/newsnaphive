@@ -12,7 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
-
+import AutoSyncModal from '../components/AutoSyncModal';
+import { checkForNewCameraPhotos } from '../utils/photoDetector';
 // assets
 const hero = require('../../assets/hero.png');
 const profile = require('../../assets/profile.jpg');
@@ -31,6 +32,16 @@ const Home = ({ navigation, route }) => {
   const [user, setUser] = useState(null);
   const { hives, setHives } = useContext(EventContext);
   const { t, i18n } = useTranslation();
+  const [showAutoSyncModal, setShowAutoSyncModal] = useState(false);
+
+
+
+
+  const [newPhotosData, setNewPhotosData] = useState({
+  count: 0,
+  photos: [],
+  previewImage: null,
+});
 
   // Start background transition animation
   useFocusEffect(
@@ -186,6 +197,51 @@ const Home = ({ navigation, route }) => {
       })
     );
   }, [setHives, setEvents]);
+
+
+// Check for new camera photos on mount and focus
+// Check for new camera photos on mount and focus
+useFocusEffect(
+  useCallback(() => {
+    const checkPhotos = async () => {
+      try {
+        console.log('🔍 Checking for new photos...');
+        const result = await checkForNewCameraPhotos();
+        
+        console.log('📊 Result:', {
+          hasNewPhotos: result.hasNewPhotos,
+          count: result.photoCount,
+          photosLength: result.photos.length
+        });
+        
+        if (result.hasNewPhotos && result.photoCount > 0) {
+          const previewUri = result.photos[0]?.uri;
+          
+          console.log('✅ Setting photo data, preview:', previewUri ? 'exists' : 'missing');
+          
+          setNewPhotosData({
+            count: result.photoCount,
+            photos: result.photos,
+            previewImage: previewUri || null,
+          });
+          
+          // Show modal after a short delay
+          setTimeout(() => {
+            console.log('📱 Showing AutoSync modal');
+            setShowAutoSyncModal(true);
+          }, 500);
+        } else {
+          console.log('ℹ️ No new photos found');
+        }
+      } catch (error) {
+        console.error('❌ Error checking photos:', error);
+      }
+    };
+
+    checkPhotos();
+  }, [])
+);
+
 
   useEffect(() => {
     removeExpiredEvents();
@@ -382,7 +438,7 @@ const Home = ({ navigation, route }) => {
                     {t('letMemoriesFlow')}
                   </CustomText>
 
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={styles.importBtnWhite}
                     onPress={() => navigation.navigate('CreateHive')}
                   >
@@ -392,7 +448,22 @@ const Home = ({ navigation, route }) => {
                     <CustomText weight="bold" style={{ color: '#DA3C84', fontSize: 14 }}>
                       {t('createNewHive')}
                     </CustomText>
+                  </TouchableOpacity> */}
+
+
+                  <TouchableOpacity
+                    style={styles.importBtnWhite}
+               
+                  >
+                    <View>
+                      <Plus color="#DA3C84" size={20} />
+                    </View>
+                    <CustomText weight="bold" style={{ color: '#DA3C84', fontSize: 14 }}>
+                      {t('createNewHive')}
+                    </CustomText>
                   </TouchableOpacity>
+
+
                 </View>
               </View>
             </View>
@@ -595,7 +666,7 @@ const Home = ({ navigation, route }) => {
                               justifyContent: 'flex-start',
                             }}
                           >
-                            <Lock width={16} height={16} color="#F98935" style={{display: 'grid'}} />
+                            <Lock width={16} height={16} color="#F98935" style={{ display: 'grid' }} />
                             <CustomText weight="medium" style={styles.eventTimeText}>
                               Lock
                             </CustomText>
@@ -675,6 +746,22 @@ const Home = ({ navigation, route }) => {
             </View>
           </View>
         </ScrollView>
+<AutoSyncModal
+  visible={showAutoSyncModal}
+  photoCount={newPhotosData.count}
+  previewImage={newPhotosData.previewImage}
+  onCreate={() => {
+   setShowAutoSyncModal(false);
+
+    // navigate directly to CreateHive
+    navigation.navigate('CreateHive');
+  }}
+  onSkip={() => {
+    console.log('⏭️ Skip clicked');
+    setShowAutoSyncModal(false);
+  }}
+/>
+
       </SafeAreaView>
     </SafeAreaProvider>
   );

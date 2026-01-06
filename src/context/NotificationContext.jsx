@@ -10,7 +10,7 @@ export const NotificationProvider = ({ children }) => {
         const fetchNotifications = async () => {
             const dp = require("../../assets/dp.jpg");
             const dp2 = require("../../assets/dp2.webp");
-
+            
             const data = [
                 { id: 1, name: "Recenly you click 5 photos ", time: "4hrs", image: dp, iconType: "album" },
                 { id: 2, name: "Quency Demola", time: "4hrs", image: dp2, iconType: "folder" },

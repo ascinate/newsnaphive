@@ -52,8 +52,17 @@ const AutoCreateHive = ({ navigation }) => {
   // ────────────────────────────────────────────────
   // LOAD ONLY CAMERA ROLL PHOTOS (FROM DEVICE CAMERA APP)
   // ────────────────────────────────────────────────
+// LOAD ONLY CAMERA ROLL PHOTOS (FROM DEVICE CAMERA APP)
 const loadPhotos = useCallback(async () => {
   try {
+    // If photos were passed from AutoSync, don't reload
+    if (route?.params?.cameraPhotos && route?.params?.fromAutoSync) {
+      console.log('📸 Using photos from AutoSync, skipping reload');
+      setImages(route.params.cameraPhotos);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
     const params = {
@@ -70,7 +79,7 @@ const loadPhotos = useCallback(async () => {
 
     const photos = await CameraRoll.getPhotos(params);
 
-    // Today’s date at 00:00
+    // Today's date at 00:00
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -81,7 +90,7 @@ const loadPhotos = useCallback(async () => {
         filename: edge.node.image.filename,
       }))
       .filter(photo => {
-        const d = new Date(photo.timestamp * 1000); 
+        const d = new Date(photo.timestamp * 1000);
         d.setHours(0, 0, 0, 0);
 
         return d.getTime() === today.getTime(); // only today's photos
@@ -95,12 +104,32 @@ const loadPhotos = useCallback(async () => {
   } finally {
     setLoading(false);
   }
-}, []);
+}, [route?.params]);
 
 
   // ────────────────────────────────────────────────
   // EVENT LISTENER (OPTIONAL: REMOVE IF NOT NEEDED FOR DEFAULT CAMERA)
   // ────────────────────────────────────────────────
+
+
+useEffect(() => {
+  console.log('📸 AutoCreateHive mounted');
+  console.log('📦 Route params:', route?.params);
+  
+  if (route?.params?.cameraPhotos) {
+    console.log('✅ Received camera photos:', route.params.cameraPhotos.length);
+    console.log('🔍 First photo:', route.params.cameraPhotos[0]);
+    setImages(route.params.cameraPhotos);
+  } else {
+    console.log('⚠️ No camera photos in params');
+  }
+  
+  if (route?.params?.fromAutoSync) {
+    console.log('✅ Came from AutoSync modal');
+  }
+}, [route?.params]);
+
+
   useEffect(() => {
     const listener = (data) => {
       console.log("📸 New photo detected → refreshing gallery", data);
@@ -216,13 +245,13 @@ const loadPhotos = useCallback(async () => {
         </View>
       </ScrollView>
 
-<ThemeButton 
-  style={styles.continueBtn} 
-  text="Next →" 
-  onPress={() => navigation.navigate('CreateHive', { 
-    cameraPhotos: images // Pass the images array
-  })}
-/>
+      <ThemeButton
+        style={styles.continueBtn}
+        text="Next →"
+        onPress={() => navigation.navigate('CreateHive', {
+          cameraPhotos: images // Pass the images array
+        })}
+      />
     </SafeAreaView>
   );
 };
