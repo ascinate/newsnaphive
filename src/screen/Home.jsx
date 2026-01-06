@@ -38,10 +38,10 @@ const Home = ({ navigation, route }) => {
 
 
   const [newPhotosData, setNewPhotosData] = useState({
-  count: 0,
-  photos: [],
-  previewImage: null,
-});
+    count: 0,
+    photos: [],
+    previewImage: null,
+  });
 
   // Start background transition animation
   useFocusEffect(
@@ -199,48 +199,48 @@ const Home = ({ navigation, route }) => {
   }, [setHives, setEvents]);
 
 
-// Check for new camera photos on mount and focus
-// Check for new camera photos on mount and focus
-useFocusEffect(
-  useCallback(() => {
-    const checkPhotos = async () => {
-      try {
-        console.log('🔍 Checking for new photos...');
-        const result = await checkForNewCameraPhotos();
-        
-        console.log('📊 Result:', {
-          hasNewPhotos: result.hasNewPhotos,
-          count: result.photoCount,
-          photosLength: result.photos.length
-        });
-        
-        if (result.hasNewPhotos && result.photoCount > 0) {
-          const previewUri = result.photos[0]?.uri;
-          
-          console.log('✅ Setting photo data, preview:', previewUri ? 'exists' : 'missing');
-          
-          setNewPhotosData({
-            count: result.photoCount,
-            photos: result.photos,
-            previewImage: previewUri || null,
-          });
-          
-          // Show modal after a short delay
-          setTimeout(() => {
-            console.log('📱 Showing AutoSync modal');
-            setShowAutoSyncModal(true);
-          }, 500);
-        } else {
-          console.log('ℹ️ No new photos found');
-        }
-      } catch (error) {
-        console.error('❌ Error checking photos:', error);
-      }
-    };
+  // Check for new camera photos on mount and focus
+  // Check for new camera photos on mount and focus
+  useFocusEffect(
+    useCallback(() => {
+      const checkPhotos = async () => {
+        try {
+          console.log('🔍 Checking for new photos...');
+          const result = await checkForNewCameraPhotos();
 
-    checkPhotos();
-  }, [])
-);
+          console.log('📊 Result:', {
+            hasNewPhotos: result.hasNewPhotos,
+            count: result.photoCount,
+            photosLength: result.photos.length
+          });
+
+          if (result.hasNewPhotos && result.photoCount > 0) {
+            const previewUri = result.photos[0]?.uri;
+
+            console.log('✅ Setting photo data, preview:', previewUri ? 'exists' : 'missing');
+
+            setNewPhotosData({
+              count: result.photoCount,
+              photos: result.photos,
+              previewImage: previewUri || null,
+            });
+
+            // Show modal after a short delay
+            setTimeout(() => {
+              console.log('📱 Showing AutoSync modal');
+              setShowAutoSyncModal(true);
+            }, 500);
+          } else {
+            console.log('ℹ️ No new photos found');
+          }
+        } catch (error) {
+          console.error('❌ Error checking photos:', error);
+        }
+      };
+
+      checkPhotos();
+    }, [])
+  );
 
 
   useEffect(() => {
@@ -453,7 +453,7 @@ useFocusEffect(
 
                   <TouchableOpacity
                     style={styles.importBtnWhite}
-               
+
                   >
                     <View>
                       <Plus color="#DA3C84" size={20} />
@@ -746,21 +746,28 @@ useFocusEffect(
             </View>
           </View>
         </ScrollView>
-<AutoSyncModal
-  visible={showAutoSyncModal}
-  photoCount={newPhotosData.count}
-  previewImage={newPhotosData.previewImage}
-  onCreate={() => {
-   setShowAutoSyncModal(false);
+        <AutoSyncModal
+          visible={showAutoSyncModal}
+          photoCount={newPhotosData.count}
+          previewImage={newPhotosData.previewImage}
+          onCreate={async () => {
+            setShowAutoSyncModal(false);
 
-    // navigate directly to CreateHive
-    navigation.navigate('CreateHive');
-  }}
-  onSkip={() => {
-    console.log('⏭️ Skip clicked');
-    setShowAutoSyncModal(false);
-  }}
-/>
+            // 🔐 STORE detected photos TEMPORARILY
+            await AsyncStorage.setItem(
+              "AUTO_SYNC_PHOTOS",
+              JSON.stringify(newPhotosData.photos)
+            );
+
+            // 👉 Go to CreateHive (NO photos passed)
+            navigation.navigate("CreateHive");
+          }}
+
+          onSkip={() => {
+            console.log('⏭️ Skip clicked');
+            setShowAutoSyncModal(false);
+          }}
+        />
 
       </SafeAreaView>
     </SafeAreaProvider>

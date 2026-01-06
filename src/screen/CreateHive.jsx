@@ -150,6 +150,54 @@ const CreateHive = ({ navigation, route }) => {
         !selectedOption ||                  // Messaging settings
         !checked;                           // Privacy policy
 
+    const uploadAutoSyncPhotos = async (hiveId) => {
+        try {
+            const storedPhotos = await AsyncStorage.getItem("AUTO_SYNC_PHOTOS");
+            if (!storedPhotos) return;
+
+            const photos = JSON.parse(storedPhotos).slice(0, 20);
+            if (!photos.length) return;
+
+            const token = await AsyncStorage.getItem("token");
+            if (!token) return;
+
+            const formData = new FormData();
+
+            photos.forEach((photo, index) => {
+                if (!photo?.uri) return;
+
+                formData.append("images", {
+                    uri: photo.uri,
+                    type: "image/jpeg",
+                    name: photo.filename || `auto_${Date.now()}_${index}.jpg`,
+                });
+            });
+
+            const res = await fetch(
+                `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
+
+            if (!res.ok) {
+                console.log("❌ Auto-sync upload failed");
+                return;
+            }
+
+            console.log("✅ Auto-sync photos uploaded");
+
+            await AsyncStorage.removeItem("AUTO_SYNC_PHOTOS");
+
+        } catch (err) {
+            console.log("❌ Auto-sync upload error:", err);
+        }
+    };
+
 
 
     const handleCreateHive = async () => {
@@ -219,14 +267,13 @@ const CreateHive = ({ navigation, route }) => {
                 text2: t('startSharingMemories'),
             });
 
-            const hiveId = result.data?._id;
+            const hiveId = result.data._id;
 
-            // 🚀 GO DIRECTLY TO GALLERY
-            navigation.replace("FolderLayout", {
-                hiveId,
-                folderName: result.data.hiveName,
-                eventTitle: result.data.hiveName,
-                eventDescription: result.data.description,
+            await uploadAutoSyncPhotos(hiveId);
+
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "Home", params: { showCreateToast: true } }],
             });
 
         } catch (error) {
