@@ -142,26 +142,26 @@ const CreateHive = ({ navigation, route }) => {
             console.log('Received camera photos:', route.params.cameraPhotos.length);
         }
     }, [route?.params?.cameraPhotos]);
-const isCreateDisabled =
-  !hiveName.trim() ||                 // Hive name required
-  (!uploadedImage && !selectedStockId) || // Image required
-  !hiveType ||                        // Privacy dropdown
-  !uploadType ||                      // Media upload settings
-  !selectedOption ||                  // Messaging settings
-  !checked;                           // Privacy policy
+    const isCreateDisabled =
+        !hiveName.trim() ||                 // Hive name required
+        (!uploadedImage && !selectedStockId) || // Image required
+        !hiveType ||                        // Privacy dropdown
+        !uploadType ||                      // Media upload settings
+        !selectedOption ||                  // Messaging settings
+        !checked;                           // Privacy policy
 
 
 
     const handleCreateHive = async () => {
         try {
-if (isCreateDisabled) {
-  Toast.show({
-    type: "info",
-    text1: t('completeAllFields'),
-    text2: t('completeAllFields'),
-  });
-  return;
-}
+            if (isCreateDisabled) {
+                Toast.show({
+                    type: "info",
+                    text1: t('completeAllFields'),
+                    text2: t('completeAllFields'),
+                });
+                return;
+            }
 
             showLoader();
 
@@ -188,17 +188,21 @@ if (isCreateDisabled) {
                     type: "image/jpeg",
                 });
             }
+
             const token = await AsyncStorage.getItem("token");
-            const response = await fetch("https://snaphive-node.vercel.app/api/hives", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                body: formData,
-            });
+
+            const response = await fetch(
+                "https://snaphive-node.vercel.app/api/hives",
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
 
             const result = await response.json();
-            console.log("Create Hive result:", result);
 
             if (!response.ok) {
                 Toast.show({
@@ -215,17 +219,15 @@ if (isCreateDisabled) {
                 text2: t('startSharingMemories'),
             });
 
-            setTimeout(() => {
-                navigation.reset({
-                    index: 0,
-                    routes: [
-                        {
-                            name: "Home",
-                            params: { showCreateToast: true },
-                        },
-                    ],
-                });
-            }, 300);
+            const hiveId = result.data?._id;
+
+            // 🚀 GO DIRECTLY TO GALLERY
+            navigation.replace("FolderLayout", {
+                hiveId,
+                folderName: result.data.hiveName,
+                eventTitle: result.data.hiveName,
+                eventDescription: result.data.description,
+            });
 
         } catch (error) {
             console.log("Create Hive Error:", error);
@@ -238,6 +240,7 @@ if (isCreateDisabled) {
             hideLoader();
         }
     };
+
 
 
 
@@ -1003,12 +1006,12 @@ if (isCreateDisabled) {
 
 
                                 <View style={{}}>
-                                  <ThemeButton
-  text={t('createHive')}
-  onPress={handleCreateHive}
-  disabled={isCreateDisabled}
-  style={{ width: "100%" }}
-/>
+                                    <ThemeButton
+                                        text={t('createHive')}
+                                        onPress={handleCreateHive}
+                                        disabled={isCreateDisabled}
+                                        style={{ width: "100%" }}
+                                    />
 
                                 </View>
                             </View>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import {
   View,
   ScrollView,
@@ -9,6 +9,8 @@ import {
   TextInput,
   TouchableWithoutFeedback,
 } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Plus,
@@ -88,224 +90,171 @@ const FolderLayout = ({ navigation, route }) => {
   const { events, setEvents } = useContext(EventContext);
 
   console.log("hive id:" + hiveId);
-  useEffect(() => {
-    const fetchHive = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        const storedUser = await AsyncStorage.getItem("user");
+  useFocusEffect(
+    useCallback(() => {
+      const fetchHive = async () => {
+        try {
+          const token = await AsyncStorage.getItem("token");
+          const storedUser = await AsyncStorage.getItem("user");
 
-        if (!token || !storedUser) return;
+          if (!token || !storedUser) return;
 
-        const loggedInUser = JSON.parse(storedUser);
-        const loggedInUserId = loggedInUser._id;
+          const loggedInUser = JSON.parse(storedUser);
+          const loggedInUserId = loggedInUser._id;
 
-        const res = await axios.get(
-          `https://snaphive-node.vercel.app/api/hives/${hiveId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+          const res = await axios.get(
+            `https://snaphive-node.vercel.app/api/hives/${hiveId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
 
-        const hive = res.data.data;
+          const hive = res.data.data;
 
-        // PHOTOS
-        setUploadedImages(hive.images || []);
+          // PHOTOS
+          setUploadedImages(hive.images || []);
 
-        const combinedMembers = [
-          {
-            _id: hive.user._id,
-            email: hive.user.email,
-            name: hive.user.name,
-            profileImage: hive.user.profileImage,
-            role: "owner",
-          },
-          ...(hive.members || []).map(m => ({
-            _id: m.memberId?._id,
-            email: m.memberId?.email || m.email,
-            name: m.memberId?.name,
-            profileImage: m.memberId?.profileImage,
-            role: "member",
-            status: m.status,
-          })),
-        ];
+          const combinedMembers = [
+            {
+              _id: hive.user._id,
+              email: hive.user.email,
+              name: hive.user.name,
+              profileImage: hive.user.profileImage,
+              role: "owner",
+            },
+            ...(hive.members || []).map(m => ({
+              _id: m.memberId?._id,
+              email: m.memberId?.email || m.email,
+              name: m.memberId?.name,
+              profileImage: m.memberId?.profileImage,
+              role: "member",
+              status: m.status,
+            })),
+          ];
 
-        // 🔥 REMOVE LOGGED-IN USER ONLY
-        const finalMembers = combinedMembers.filter(
-          m => m._id?.toString() !== loggedInUserId
-        );
+          // 🔥 REMOVE LOGGED-IN USER ONLY
+          const finalMembers = combinedMembers.filter(
+            m => m._id?.toString() !== loggedInUserId
+          );
 
-        setMembersList(finalMembers);
+          setMembersList(finalMembers);
 
-      } catch (err) {
-        console.error("Error fetching hive:", err);
-      }
+        } catch (err) {
+          console.error("Error fetching hive:", err);
+        }
+      };
+
+      if (hiveId) fetchHive();
+
+    }, [hiveId])
+  );
+
+  const handleUpload = async () => {
+    const options = {
+      mediaType: "photo",
+      includeBase64: false,
+      quality: 0.5,
+      selectionLimit: 0,
+      maxWidth: 1920,
+      maxHeight: 1920,
     };
 
-    if (hiveId) fetchHive();
-  }, [hiveId]);
+    launchImageLibrary(options, async (response) => {
+      if (response.didCancel || response.errorCode) return;
+      if (!response.assets || response.assets.length === 0) return;
 
+      showLoader(); // 🔄 Show loader before upload
 
-  const formatDisplayDate = (date) => {
-    if (!date) return 'N/A';
-    const dateObj = date instanceof Date ? date : new Date(date);
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const year = dateObj.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+      try {
+        const token = await AsyncStorage.getItem("token");
 
-  const formatDisplayTime = (date) => {
-    if (!date) return 'N/A';
-    const dateObj = date instanceof Date ? date : new Date(date);
-    let hours = dateObj.getHours();
-    let minutes = dateObj.getMinutes();
-    let ampm = hours >= 12 ? 'PM' : 'AM';
-
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-
-    return `${hours}:${minutes} ${ampm}`;
-  };
-
-  // useEffect(() => {
-  //   loadSavedImages();
-  // }, []);
-
-  const loadSavedImages = async () => {
-    try {
-      // First, try to load from AsyncStorage
-      const saved = await AsyncStorage.getItem(`folder_${folderName}`);
-
-      if (saved) {
-        const savedPhotos = JSON.parse(saved);
-        setUploadedImages(savedPhotos);
-        console.log('Loaded from storage:', savedPhotos.length);
-      }
-      // If no saved photos but we have photos from route params, use those
-      else if (photos && photos.length > 0) {
-        setUploadedImages(photos);
-        // Save them to AsyncStorage for persistence
-        await AsyncStorage.setItem(
-          `folder_${folderName}`,
-          JSON.stringify(photos)
-        );
-        console.log('Loaded from route params:', photos.length);
-      }
-    } catch (e) {
-      console.log("Failed to load images", e);
-      // Fallback to route params if storage fails
-      if (photos && photos.length > 0) {
-        setUploadedImages(photos);
-      }
-    }
-  };
-const handleUpload = async () => {
-  const options = {
-    mediaType: "photo",
-    includeBase64: false,
-    quality: 0.5,
-    selectionLimit: 0,
-    maxWidth: 1920,
-    maxHeight: 1920,
-  };
-
-  launchImageLibrary(options, async (response) => {
-    if (response.didCancel || response.errorCode) return;
-    if (!response.assets || response.assets.length === 0) return;
-
-    showLoader(); // 🔄 Show loader before upload
-
-    try {
-      const token = await AsyncStorage.getItem("token");
-
-      if (!token) {
-        hideLoader();
-        Toast.show({
-          type: "error",
-          text1: "Session Expired",
-          text2: "Please login again",
-        });
-        return;
-      }
-
-      let formData = new FormData();
-
-      response.assets.forEach((img, index) => {
-        formData.append("images", {
-          uri: img.uri,
-          type: img.type || "image/jpeg",
-          name: img.fileName || `image_${Date.now()}_${index}.jpg`,
-        });
-      });
-
-      const res = await axios.post(
-        `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-          timeout: 60000,
-        }
-      );
-
-      const updatedImages = res.data.images;
-      setUploadedImages(updatedImages);
-
-      setEvents((prevEvents) =>
-        prevEvents.map((event) =>
-          event._id === hiveId ? { ...event, images: updatedImages } : event
-        )
-      );
-
-      Toast.show({
-        type: "success",
-        text1: "Upload Successful",
-        text2: `${response.assets.length} image(s) uploaded`,
-        visibilityTime: 2500,
-      });
-
-    } catch (error) {
-      console.log("Upload Error:", error.response?.data || error.message);
-
-      if (error.response) {
-        if (error.response.status === 403) {
+        if (!token) {
+          hideLoader();
           Toast.show({
             type: "error",
-            text1: "Upload Failed",
-            text2: "Permission denied",
+            text1: "Session Expired",
+            text2: "Please login again",
           });
-        } else if (error.response.status === 413) {
+          return;
+        }
+
+        let formData = new FormData();
+
+        response.assets.forEach((img, index) => {
+          formData.append("images", {
+            uri: img.uri,
+            type: img.type || "image/jpeg",
+            name: img.fileName || `image_${Date.now()}_${index}.jpg`,
+          });
+        });
+
+        const res = await axios.post(
+          `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+            timeout: 60000,
+          }
+        );
+
+        const updatedImages = res.data.images;
+        setUploadedImages(updatedImages);
+
+        setEvents((prevEvents) =>
+          prevEvents.map((event) =>
+            event._id === hiveId ? { ...event, images: updatedImages } : event
+          )
+        );
+
+        Toast.show({
+          type: "success",
+          text1: "Upload Successful",
+          text2: `${response.assets.length} image(s) uploaded`,
+          visibilityTime: 2500,
+        });
+
+      } catch (error) {
+        console.log("Upload Error:", error.response?.data || error.message);
+
+        if (error.response) {
+          if (error.response.status === 403) {
+            Toast.show({
+              type: "error",
+              text1: "Upload Failed",
+              text2: "Permission denied",
+            });
+          } else if (error.response.status === 413) {
+            Toast.show({
+              type: "error",
+              text1: "Upload Failed",
+              text2: "Images too large",
+            });
+          } else {
+            Toast.show({
+              type: "error",
+              text1: "Upload Failed",
+              text2: error.response.data?.message || "Something went wrong",
+            });
+          }
+        } else if (error.code === "ECONNABORTED") {
           Toast.show({
             type: "error",
-            text1: "Upload Failed",
-            text2: "Images too large",
+            text1: "Upload Timeout",
+            text2: "Check your internet connection",
           });
         } else {
           Toast.show({
             type: "error",
-            text1: "Upload Failed",
-            text2: error.response.data?.message || "Something went wrong",
+            text1: "Network Error",
+            text2: "Please try again",
           });
         }
-      } else if (error.code === "ECONNABORTED") {
-        Toast.show({
-          type: "error",
-          text1: "Upload Timeout",
-          text2: "Check your internet connection",
-        });
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Network Error",
-          text2: "Please try again",
-        });
+      } finally {
+        hideLoader(); // ✅ Always hide loader
       }
-    } finally {
-      hideLoader(); // ✅ Always hide loader
-    }
-  });
-};
+    });
+  };
 
 
   const members = [
@@ -407,7 +356,7 @@ const handleUpload = async () => {
           <CustomText weight="bold" style={{ color: '#fff', fontSize: width * 0.075 }}>
             {eventTitle || folderName || '2025 Picnic'}
           </CustomText>
-          <CustomText weight="medium" style={{ color: '#fff', fontSize: width * 0.035, marginBottom: height * 0.025,textAlign: 'center' }}>
+          <CustomText weight="medium" style={{ color: '#fff', fontSize: width * 0.035, marginBottom: height * 0.025, textAlign: 'center' }}>
             {eventDescription || 'It is a long established fact that'}
           </CustomText>
 
@@ -536,10 +485,14 @@ const handleUpload = async () => {
             {selectedTab === "Gallery" && (
               <View style={styles.grid}>
                 {uploadedImages.length === 0 ? (
-                  <CustomText style={styles.infoText}>{t('noPhotos')}</CustomText>
+                  <CustomText style={styles.infoText}>
+                    {t('noPhotos')}
+                  </CustomText>
                 ) : (
                   <View style={styles.imageWrapperRow}>
                     {uploadedImages.map((uri, index) => {
+                      if (!uri || typeof uri !== "string") return null;
+
                       let styleToApply = {};
                       const pos = index % 4;
 
@@ -550,7 +503,11 @@ const handleUpload = async () => {
 
                       return (
                         <View key={`uploaded-${index}`} style={styleToApply}>
-                          <Image source={{ uri }} style={styles.photo} />
+                          <Image
+                            source={{ uri }}
+                            style={styles.photo}
+                            resizeMode="cover"
+                          />
                         </View>
                       );
                     })}
@@ -558,6 +515,7 @@ const handleUpload = async () => {
                 )}
               </View>
             )}
+
 
             {selectedTab === "Chat" && (
               <>
