@@ -12,6 +12,7 @@ import {
 const { width } = Dimensions.get("window");
 
 const profile = require("../../assets/profile.jpg");
+const snaphive = require("../../assets/snaphive-logo.png");
 
 import { colors } from '../Theme/theme';
 
@@ -25,6 +26,13 @@ const AutoSyncModal = ({ visible, onCreate, onSkip, photoCount = 0, previewImage
     >
       <View style={styles.overlay}>
         <View style={styles.container}>
+
+          {/* SnapHive Logo */}
+          <Image
+            source={snaphive}
+            style={styles.snaphiveLogo}
+          />
+
           {/* Top Image Stack */}
           <View style={styles.imageStack}>
             <Image
@@ -47,8 +55,8 @@ const AutoSyncModal = ({ visible, onCreate, onSkip, photoCount = 0, previewImage
 
           {/* Description */}
           <Text style={styles.description}>
-            We found {photoCount} new {photoCount === 1 ? 'photo' : 'photos'} on your device. Create a Hive to auto sync and
-            share them!
+            We found {photoCount} new {photoCount === 1 ? 'photo' : 'photos'} on your device.
+            Create a Hive to auto sync and share them!
           </Text>
 
           {/* Preview Card */}
@@ -62,7 +70,7 @@ const AutoSyncModal = ({ visible, onCreate, onSkip, photoCount = 0, previewImage
             </Text>
           </View>
 
-          {/* Primary Button - FIXED */}
+          {/* Primary Button */}
           <TouchableOpacity style={styles.primaryButton} onPress={onCreate}>
             <Text style={styles.primaryText}>Create Hive</Text>
           </TouchableOpacity>
@@ -71,6 +79,7 @@ const AutoSyncModal = ({ visible, onCreate, onSkip, photoCount = 0, previewImage
           <TouchableOpacity onPress={onSkip}>
             <Text style={styles.skipText}>Skip for now</Text>
           </TouchableOpacity>
+
         </View>
       </View>
     </Modal>
@@ -87,11 +96,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   container: {
-    width: width * 0.88,
+    width: width * 0.92,
     backgroundColor: "#fff",
     borderRadius: 20,
-    padding: 20,
+    padding: 24,
     alignItems: "center",
+  },
+
+  /* SnapHive Logo */
+  snaphiveLogo: {
+    width: 120,
+    height: 50,
+    resizeMode: "contain",
+    position: "absolute",
+    top: -30,     // ✅ makes it visible above modal
+    zIndex: 10,   // ✅ ensures it stays on top
   },
 
   /* Image Stack */
