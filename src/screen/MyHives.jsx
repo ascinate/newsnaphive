@@ -43,6 +43,51 @@ const MyHives = ({ navigation, route }) => {
     const [refreshing, setRefreshing] = useState(false);
     const { hives } = useContext(EventContext);
     const { t, i18n } = useTranslation();
+    const [searchText, setSearchText] = useState("");
+
+
+
+    const getHivePhotos = (hive) => {
+        if (Array.isArray(hive.images) && hive.images.length > 0) {
+            return hive.images;
+        }
+        if (Array.isArray(hive.photos) && hive.photos.length > 0) {
+            return hive.photos;
+        }
+        return [];
+    };
+
+
+
+    const getHiveMembersCount = (hive) => {
+        // Best case: backend already sends count
+        if (typeof hive.memberCount === "number") {
+            return hive.memberCount;
+        }
+
+        // Common cases: members array
+        if (Array.isArray(hive.members)) {
+            return hive.members.length;
+        }
+
+        if (Array.isArray(hive.participants)) {
+            return hive.participants.length;
+        }
+
+        if (Array.isArray(hive.invitedUsers)) {
+            return hive.invitedUsers.length;
+        }
+
+        // Owner only
+        return 1;
+    };
+
+    const filteredHives = hives.filter(hive =>
+        hive.hiveName?.toLowerCase().includes(searchText.toLowerCase())
+    );
+
+
+
 
     return (
         <SafeAreaProvider>
@@ -79,7 +124,12 @@ const MyHives = ({ navigation, route }) => {
                                 placeholder={t('searchHive')}
                                 placeholderTextColor="#9CA3AF"
                                 /> */}
-                                <SearchBar />
+                            <SearchBar
+                                value={searchText}
+                                onChangeText={setSearchText}
+                                placeholder={t('searchHive')}
+                            />
+
 
                         </View>
                     </View>
@@ -111,11 +161,10 @@ const MyHives = ({ navigation, route }) => {
                             >
                                 <View>
                                     <CustomText weight="bold" style={styles.cardText}>
-                                        {hives.reduce((total, event) => {
-                                            // Check both 'images' (from API) and 'photos' (legacy/local)
-                                            const imageCount = event.images?.length || event.photos?.length || 0;
-                                            return total + imageCount;
+                                        {hives.reduce((total, hive) => {
+                                            return total + getHivePhotos(hive).length;
                                         }, 0)}
+
 
                                     </CustomText>
                                     <CustomText weight="medium" style={{ color: '#fff' }}>
@@ -130,8 +179,8 @@ const MyHives = ({ navigation, route }) => {
 
                     {/* Event Row Section */}
                     <View style={{ marginTop: 20, paddingBottom: 100 }}>
-                        {hives && hives.length > 0 ? (
-                            hives.map((item, index) => (
+                        {filteredHives.length > 0 ? (
+                            filteredHives.map((item, index) => (
                                 <TouchableOpacity
                                     key={index}
                                     onPress={() =>
@@ -141,7 +190,7 @@ const MyHives = ({ navigation, route }) => {
                                             hiveId: item._id,
                                             date: item.createdAt,
                                             owner: item.ownerName,
-                                             eventDescription: item.description,
+                                            eventDescription: item.description,
                                             photos: item.photos || [],
                                         })
                                     }
@@ -164,13 +213,17 @@ const MyHives = ({ navigation, route }) => {
                                             <View style={{ flexDirection: "row", gap: 20, marginTop: 6 }}>
                                                 <View style={{ flexDirection: "row", gap: 4, alignItems: "center" }}>
                                                     <Users width={14} height={14} color="#6B7280" />
-                                                    <CustomText style={{ color: "#6B7280" }}>1</CustomText>
+                                                    <CustomText style={{ color: "#6B7280" }}>
+                                                        {getHiveMembersCount(item)}
+                                                    </CustomText>
+
                                                 </View>
 
                                                 <View style={{ flexDirection: "row", gap: 4, alignItems: "center" }}>
                                                     <FileImage width={14} height={14} color="#6B7280" />
                                                     <CustomText style={{ color: "#6B7280" }}>
-                                                        {item.photos?.length || 0}
+                                                        {getHivePhotos(item).length}
+
                                                     </CustomText>
                                                 </View>
                                             </View>

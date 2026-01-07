@@ -8,6 +8,8 @@ import {
   Text,
   TextInput,
   TouchableWithoutFeedback,
+  Modal,
+  FlatList,
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -88,6 +90,8 @@ const FolderLayout = ({ navigation, route }) => {
   const { showLoader, hideLoader } = useLoader();
   const { t } = useTranslation();
   const { events, setEvents } = useContext(EventContext);
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   console.log("hive id:" + hiveId);
   useFocusEffect(
@@ -503,11 +507,20 @@ const FolderLayout = ({ navigation, route }) => {
 
                       return (
                         <View key={`uploaded-${index}`} style={styleToApply}>
-                          <Image
-                            source={{ uri }}
-                            style={styles.photo}
-                            resizeMode="cover"
-                          />
+                          <TouchableOpacity
+                            activeOpacity={0.9}
+                            onPress={() => {
+                              setActiveIndex(index);
+                              setViewerVisible(true);
+                            }}
+                          >
+                            <Image
+                              source={{ uri }}
+                              style={styles.photo}
+                              resizeMode="cover"
+                            />
+                          </TouchableOpacity>
+
                         </View>
                       );
                     })}
@@ -776,6 +789,62 @@ const FolderLayout = ({ navigation, route }) => {
           )}
         </View>
       </View>
+
+      <Modal
+        visible={viewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setViewerVisible(false)}
+      >
+        <View style={styles.viewerContainer}>
+
+          {/* Close Button */}
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => setViewerVisible(false)}
+          >
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 50,
+                backgroundColor: "rgba(202, 197, 200, 0.5)",
+              }}
+            >
+
+              <CustomText style={{ color: "#2e2e2eff", fontSize: 18 }}>✕</CustomText>
+
+            </View>
+          </TouchableOpacity>
+
+          {/* Image Slider */}
+          <FlatList
+            data={uploadedImages}
+            horizontal
+            pagingEnabled
+            initialScrollIndex={activeIndex}
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(_, i) => i.toString()}
+            getItemLayout={(_, index) => ({
+              length: width,
+              offset: width * index,
+              index,
+            })}
+            renderItem={({ item }) => (
+              <Image
+                source={{ uri: item }}
+                style={styles.fullImage}
+                resizeMode="contain"
+              />
+            )}
+          />
+        </View>
+      </Modal>
+
+
+
 
     </ScreenLayout>
   );
@@ -1152,6 +1221,27 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
+
+
+
+  viewerContainer: {
+    flex: 1,
+    backgroundColor: "black",
+    justifyContent: "center",
+  },
+
+  fullImage: {
+    width: width,
+    height: "100%",
+  },
+
+  closeBtn: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    zIndex: 10,
+  },
+
 
 });
 

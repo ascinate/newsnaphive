@@ -2,19 +2,21 @@ import { View, StyleSheet, TextInput, Dimensions } from 'react-native'
 import React from 'react'
 import { Search } from 'lucide-react-native';
 const { width, height } = Dimensions.get('window');
-const SearchBar = () => {
+const SearchBar = ({ value, onChangeText, placeholder = "Search" }) => {
     return (
-        <View style={[styles.searchContainer]}>
+        <View style={styles.searchContainer}>
             <TextInput
                 style={styles.searchInput}
-                placeholder="Search"
+                placeholder={placeholder}
                 placeholderTextColor="#9CA3AF"
-
+                value={value}
+                onChangeText={onChangeText}
             />
-            <Search color="#6B7280" size={20} style={styles.searchIcon} />
+            <Search color="#6B7280" size={20} />
         </View>
-    )
-}
+    );
+};
+
 
 const styles = StyleSheet.create({
 

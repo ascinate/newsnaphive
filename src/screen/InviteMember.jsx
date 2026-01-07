@@ -221,7 +221,7 @@ useEffect(() => {
         </View>
 
         {/* Quick Share */}
-        <View style={styles.quickShareSection}>
+        {/* <View style={styles.quickShareSection}>
           <CustomText weight="bold" style={styles.quickShareTitle}>
             Quick Share
           </CustomText>
@@ -245,7 +245,7 @@ useEffect(() => {
               </CustomText>
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
 
 
       </ScrollView>
