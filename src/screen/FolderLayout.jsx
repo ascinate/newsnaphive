@@ -92,6 +92,7 @@ const FolderLayout = ({ navigation, route }) => {
   const { events, setEvents } = useContext(EventContext);
   const [viewerVisible, setViewerVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { updateHivePhotos, updateHiveMembers } = useContext(EventContext);
 
   console.log("hive id:" + hiveId);
   useFocusEffect(
@@ -140,6 +141,7 @@ const FolderLayout = ({ navigation, route }) => {
           );
 
           setMembersList(finalMembers);
+          updateHiveMembers(hiveId, combinedMembers);
 
         } catch (err) {
           console.error("Error fetching hive:", err);
@@ -202,14 +204,18 @@ const FolderLayout = ({ navigation, route }) => {
           }
         );
 
-        const updatedImages = res.data.images;
-        setUploadedImages(updatedImages);
+const updatedImages = res.data.images;
+setUploadedImages(updatedImages);
 
-        setEvents((prevEvents) =>
-          prevEvents.map((event) =>
-            event._id === hiveId ? { ...event, images: updatedImages } : event
-          )
-        );
+// Update old events array
+setEvents((prevEvents) =>
+  prevEvents.map((event) =>
+    event._id === hiveId ? { ...event, images: updatedImages } : event
+  )
+);
+
+// ✅ UPDATE HIVES CONTEXT - This makes it real-time!
+updateHivePhotos(hiveId, updatedImages);
 
         Toast.show({
           type: "success",
@@ -1224,11 +1230,12 @@ const styles = StyleSheet.create({
 
 
 
-  viewerContainer: {
-    flex: 1,
-    backgroundColor: "black",
-    justifyContent: "center",
-  },
+viewerContainer: {
+  flex: 1,
+  backgroundColor: "rgba(255,255,255,0.9)", // ✅ white transparent
+  justifyContent: "center",
+},
+
 
   fullImage: {
     width: width,

@@ -36,15 +36,25 @@ import { useTranslation } from 'react-i18next';
 import SearchBar from '../components/SearchBar';
 // assets
 
-
+import { useFocusEffect } from '@react-navigation/native';
 const { width, height } = Dimensions.get('window');
 
 const MyHives = ({ navigation, route }) => {
     const [refreshing, setRefreshing] = useState(false);
-    const { hives } = useContext(EventContext);
+    const { hives, fetchHives } = useContext(EventContext);
     const { t, i18n } = useTranslation();
     const [searchText, setSearchText] = useState("");
 
+    const onRefresh = async () => {
+        try {
+            setRefreshing(true);
+            await fetchHives();   // 🔥 THIS was missing
+        } catch (e) {
+            console.log("Refresh error:", e);
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
 
     const getHivePhotos = (hive) => {
@@ -87,7 +97,11 @@ const MyHives = ({ navigation, route }) => {
     );
 
 
-
+    useFocusEffect(
+        useCallback(() => {
+            fetchHives();
+        }, [])
+    );
 
     return (
         <SafeAreaProvider>
@@ -97,7 +111,10 @@ const MyHives = ({ navigation, route }) => {
                     style={styles.container}
                     showsVerticalScrollIndicator={false}
                     refreshControl={
-                        <RefreshControl refreshing={refreshing} />
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                        />
                     }>
                     {/* Header Section */}
 
