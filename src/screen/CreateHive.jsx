@@ -20,6 +20,7 @@ import PrivacyPolicyModal from '../components/PrivacyPolicyModal';
 import AppModal from "../components/AppModal";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { uploadImageToFirebase } from '../utils/firebaseUpload';
 
 // assets
 const hero = require('../../assets/hero.png');
@@ -151,51 +152,33 @@ const CreateHive = ({ navigation, route }) => {
         !checked;                           // Privacy policy
 
     const uploadAutoSyncPhotos = async (hiveId) => {
-        try {
-            const storedPhotos = await AsyncStorage.getItem("AUTO_SYNC_PHOTOS");
-            if (!storedPhotos) return;
-
-            const photos = JSON.parse(storedPhotos).slice(0, 20);
-            if (!photos.length) return;
-
-            const token = await AsyncStorage.getItem("token");
-            if (!token) return;
-
-            const formData = new FormData();
-
-            photos.forEach((photo, index) => {
-                if (!photo?.uri) return;
-
-                formData.append("images", {
-                    uri: photo.uri,
-                    type: "image/jpeg",
-                    name: photo.filename || `auto_${Date.now()}_${index}.jpg`,
-                });
-            });
-
-            const res = await fetch(
-                `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: formData,
-                }
-            );
-
-            if (!res.ok) {
-                console.log("❌ Auto-sync upload failed");
-                return;
-            }
-
-            console.log("✅ Auto-sync photos uploaded");
-
-            await AsyncStorage.removeItem("AUTO_SYNC_PHOTOS");
-
-        } catch (err) {
-            console.log("❌ Auto-sync upload error:", err);
+    const storedPhotos = await AsyncStorage.getItem("AUTO_SYNC_PHOTOS");
+    if (!storedPhotos) return;
+    
+    const photos = JSON.parse(storedPhotos).slice(0, 20);
+    const userId = await AsyncStorage.getItem("userId");
+    const token = await AsyncStorage.getItem("token");
+    
+    const uploadedUrls = [];
+    
+    for (const photo of photos) {
+        const url = await uploadImageToFirebase(photo, userId, hiveId);
+        uploadedUrls.push(url);
+    }
+    
+    await fetch(
+        `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
+        {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ images: uploadedUrls }),
         }
+    );
+    
+    await AsyncStorage.removeItem("AUTO_SYNC_PHOTOS");
     };
 
 

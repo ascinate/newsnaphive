@@ -661,7 +661,8 @@ const Home = ({ navigation, route }) => {
                               backgroundColor: "rgba(255,255,255,0.7)",
                             }}
                           >
-                            <Share2 size={14} color="#2e2e2eff" />
+                 
+                            <Lock size={14} color="#2e2e2eff"/>
                           </View>
                         </TouchableWithoutFeedback>
 
@@ -689,7 +690,7 @@ const Home = ({ navigation, route }) => {
                               justifyContent: 'flex-start',
                             }}
                           >
-                            <Lock width={16} height={16} color="#F98935" style={{ display: 'grid' }} />
+                            <Users width={16} height={16} color="#F98935" style={{ display: 'grid' }}/>
                             <CustomText weight="medium" style={styles.eventTimeText}>
                               Lock
                             </CustomText>
@@ -1018,7 +1019,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     overflow: 'hidden',
-    padding: 12,
+    // padding: 12,
     marginBottom: 16,
     shadowColor: '#7a7979',
     shadowOffset: { width: 0, height: 4 },
@@ -1030,12 +1031,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 140,
     resizeMode: 'cover',
-    borderRadius: 8,
+      borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 0,
   },
   eventInfo: {
     paddingTop: 14,
     paddingBottom: 14,
-    paddingLeft: 4,
+    paddingLeft: 14,
     paddingRight: 4,
     backgroundColor: '#fff',
   },
