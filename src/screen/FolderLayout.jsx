@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useCallback } from "react";
+import React, { useEffect, useState, useContext, useCallback, useRef } from "react";
 import {
   View,
   ScrollView,
@@ -12,6 +12,7 @@ import {
   FlatList,
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
+import { BlurView } from "@react-native-community/blur";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -82,6 +83,7 @@ const FolderLayout = ({ navigation, route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [membersList, setMembersList] = useState([]);
+  const flatListRef = useRef(null);
   const [aiMessages, setAiMessages] = useState([]);
   const [messages, setMessages] = useState([]);
   const [textMessage, setTextMessage] = useState("");
@@ -204,18 +206,18 @@ const FolderLayout = ({ navigation, route }) => {
           }
         );
 
-const updatedImages = res.data.images;
-setUploadedImages(updatedImages);
+        const updatedImages = res.data.images;
+        setUploadedImages(updatedImages);
 
-// Update old events array
-setEvents((prevEvents) =>
-  prevEvents.map((event) =>
-    event._id === hiveId ? { ...event, images: updatedImages } : event
-  )
-);
+        // Update old events array
+        setEvents((prevEvents) =>
+          prevEvents.map((event) =>
+            event._id === hiveId ? { ...event, images: updatedImages } : event
+          )
+        );
 
-// ✅ UPDATE HIVES CONTEXT - This makes it real-time!
-updateHivePhotos(hiveId, updatedImages);
+        // ✅ UPDATE HIVES CONTEXT - This makes it real-time!
+        updateHivePhotos(hiveId, updatedImages);
 
         Toast.show({
           type: "success",
@@ -358,7 +360,14 @@ updateHivePhotos(hiveId, updatedImages);
       date="+91 1841 510 1450"
       RightIcon={
         <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)} >
-          <EllipsisVertical height={width * 0.04} width={width * 0.04} />
+          <View style={{
+            padding: 10,
+            borderRadius: 50,
+            backgroundColor: "rgba(255,255,255,0.3)",
+          }}>
+
+            <EllipsisVertical height={width * 0.04} width={width * 0.04} />
+          </View>
         </TouchableOpacity>
       }
       OverlayContent={
@@ -802,52 +811,67 @@ updateHivePhotos(hiveId, updatedImages);
         animationType="fade"
         onRequestClose={() => setViewerVisible(false)}
       >
-        <View style={styles.viewerContainer}>
+        <View style={{ flex: 1 }}>
 
-          {/* Close Button */}
-          <TouchableOpacity
-            style={styles.closeBtn}
-            onPress={() => setViewerVisible(false)}
-          >
-            <View
-              style={{
-                width: 40,
-                height: 40,
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 50,
-                backgroundColor: "rgba(202, 197, 200, 0.5)",
-              }}
-            >
 
-              <CustomText style={{ color: "#2e2e2eff", fontSize: 18 }}>✕</CustomText>
-
-            </View>
-          </TouchableOpacity>
-
-          {/* Image Slider */}
-          <FlatList
-            data={uploadedImages}
-            horizontal
-            pagingEnabled
-            initialScrollIndex={activeIndex}
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(_, i) => i.toString()}
-            getItemLayout={(_, index) => ({
-              length: width,
-              offset: width * index,
-              index,
-            })}
-            renderItem={({ item }) => (
-              <Image
-                source={{ uri: item }}
-                style={styles.fullImage}
-                resizeMode="contain"
-              />
-            )}
+          <BlurView
+            style={StyleSheet.absoluteFill}
+            blurType="light"
+            blurAmount={100}
+            reducedTransparencyFallbackColor="rgba(255,255,255,0.85)"
           />
+
+          <View style={styles.viewerContainer}>
+
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={() => setViewerVisible(false)}
+            >
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(255,255,255,0.6)",
+                }}
+              >
+                <CustomText style={{ fontSize: 18 }}>✕</CustomText>
+              </View>
+            </TouchableOpacity>
+            <FlatList
+              ref={flatListRef}
+              data={uploadedImages}
+              horizontal
+              pagingEnabled
+              initialScrollIndex={activeIndex}
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(_, i) => i.toString()}
+              getItemLayout={(data, index) => ({
+                length: width,
+                offset: width * index,
+                index,
+              })}
+              onScrollToIndexFailed={(info) => {
+                const wait = new Promise(resolve => setTimeout(resolve, 500));
+                wait.then(() => {
+                  flatListRef.current?.scrollToIndex({ index: info.index, animated: false });
+                });
+              }}
+              renderItem={({ item }) => (
+                <Image
+                  source={{ uri: item }}
+                  style={styles.fullImage}
+                  resizeMode="contain"
+                />
+              )}
+            />
+
+          </View>
         </View>
       </Modal>
+
 
 
 
@@ -1230,16 +1254,15 @@ const styles = StyleSheet.create({
 
 
 
-viewerContainer: {
-  flex: 1,
-  backgroundColor: "rgba(255,255,255,0.9)", // ✅ white transparent
-  justifyContent: "center",
-},
-
+  viewerContainer: {
+    flex: 1,
+    justifyContent: "center",
+  },
 
   fullImage: {
     width: width,
     height: "100%",
+    backgroundColor: "transparent",
   },
 
   closeBtn: {

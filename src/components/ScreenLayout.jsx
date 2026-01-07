@@ -42,7 +42,7 @@ const ScreenLayout = ({
 
             {RightIcon && (
               <TouchableWithoutFeedback onPress={() => console.log("Right icon pressed")}>
-                <View style={styles.iconButton}>{RightIcon}</View>
+                <View>{RightIcon}</View>
               </TouchableWithoutFeedback>
             )}
           </View>

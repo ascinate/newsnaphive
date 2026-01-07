@@ -13,12 +13,11 @@ import {
   QrCode,
   MessageCircle,
   Heart,
+  PencilLine,
 } from "lucide-react-native";
 import { Linking } from "react-native";
 import { Share } from "react-native";
 import { useLoader } from "../context/LoaderContext";
-// SVGs
-import Pencil from "../../assets/svg/pencil.svg";
 import { useTranslation } from 'react-i18next';
 // Components
 import ScreenLayout from "../components/ScreenLayout";
@@ -116,7 +115,9 @@ folderName={user?.name || t('userName')}
 date={user?.email || t('noEmail')}
       RightIcon={
         <TouchableOpacity onPress={() => navigation.navigate("EditProfile")}>
-          <Pencil height={16} width={16} />
+          <View style={{ padding: 10, borderRadius: 50, backgroundColor: "rgba(255,255,255,0.3)", }}>
+   <PencilLine width={16} height={16} />
+          </View>
         </TouchableOpacity>
       }
 
