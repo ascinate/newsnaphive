@@ -38,6 +38,7 @@ import { useLoader } from "../context/LoaderContext";
 import { useTranslation } from 'react-i18next';
 import axios from "axios";
 import Toast from 'react-native-toast-message';
+import { uploadImageToFirebase } from '../utils/firebaseUpload';
 // SVGs
 import QR from "../../assets/svg/qr.svg";
 
@@ -158,8 +159,7 @@ const FolderLayout = ({ navigation, route }) => {
   const handleUpload = async () => {
     const options = {
       mediaType: "photo",
-      includeBase64: false,
-      quality: 0.5,
+      quality: 0.6,
       selectionLimit: 0,
       maxWidth: 1920,
       maxHeight: 1920,
@@ -167,103 +167,53 @@ const FolderLayout = ({ navigation, route }) => {
 
     launchImageLibrary(options, async (response) => {
       if (response.didCancel || response.errorCode) return;
-      if (!response.assets || response.assets.length === 0) return;
+      if (!response.assets?.length) return;
 
-      showLoader(); // 🔄 Show loader before upload
+      showLoader();
 
       try {
         const token = await AsyncStorage.getItem("token");
+        const storedUser = await AsyncStorage.getItem("user");
 
-        if (!token) {
-          hideLoader();
-          Toast.show({
-            type: "error",
-            text1: "Session Expired",
-            text2: "Please login again",
-          });
-          return;
-        }
+        if (!token || !storedUser) throw new Error("Auth error");
 
-        let formData = new FormData();
+        const userId = JSON.parse(storedUser)._id;
 
-        response.assets.forEach((img, index) => {
-          formData.append("images", {
-            uri: img.uri,
-            type: img.type || "image/jpeg",
-            name: img.fileName || `image_${Date.now()}_${index}.jpg`,
-          });
-        });
+        // 🔥 Upload to Firebase directly
+        const uploadPromises = response.assets.map(photo =>
+          uploadImageToFirebase(photo, userId, hiveId)
+        );
 
+        const imageUrls = await Promise.all(uploadPromises);
+
+        // 🔥 Send URLs only
         const res = await axios.post(
           `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
-          formData,
+          { images: imageUrls },
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
             },
-            timeout: 60000,
           }
         );
 
-        const updatedImages = res.data.images;
-        setUploadedImages(updatedImages);
-
-        // Update old events array
-        setEvents((prevEvents) =>
-          prevEvents.map((event) =>
-            event._id === hiveId ? { ...event, images: updatedImages } : event
-          )
-        );
-
-        // ✅ UPDATE HIVES CONTEXT - This makes it real-time!
-        updateHivePhotos(hiveId, updatedImages);
+        setUploadedImages(res.data.images);
 
         Toast.show({
           type: "success",
           text1: "Upload Successful",
-          text2: `${response.assets.length} image(s) uploaded`,
-          visibilityTime: 2500,
+          text2: `${imageUrls.length} image(s) uploaded`,
         });
 
-      } catch (error) {
-        console.log("Upload Error:", error.response?.data || error.message);
-
-        if (error.response) {
-          if (error.response.status === 403) {
-            Toast.show({
-              type: "error",
-              text1: "Upload Failed",
-              text2: "Permission denied",
-            });
-          } else if (error.response.status === 413) {
-            Toast.show({
-              type: "error",
-              text1: "Upload Failed",
-              text2: "Images too large",
-            });
-          } else {
-            Toast.show({
-              type: "error",
-              text1: "Upload Failed",
-              text2: error.response.data?.message || "Something went wrong",
-            });
-          }
-        } else if (error.code === "ECONNABORTED") {
-          Toast.show({
-            type: "error",
-            text1: "Upload Timeout",
-            text2: "Check your internet connection",
-          });
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "Network Error",
-            text2: "Please try again",
-          });
-        }
+      } catch (err) {
+        console.error("Upload error:", err);
+        Toast.show({
+          type: "error",
+          text1: "Upload Failed",
+          text2: "Please try again",
+        });
       } finally {
-        hideLoader(); // ✅ Always hide loader
+        hideLoader();
       }
     });
   };

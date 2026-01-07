@@ -252,16 +252,13 @@ const CreateHive = ({ navigation, route }) => {
             });
 
             const hiveId = result.data._id;
-            hideLoader();
+
+            await uploadAutoSyncPhotos(hiveId);
+
             navigation.reset({
                 index: 0,
                 routes: [{ name: "Home", params: { showCreateToast: true } }],
             });
-
-            uploadAutoSyncPhotos(hiveId).catch(err => {
-                console.log("AutoSync upload failed:", err);
-            });
-
 
         } catch (error) {
             console.log("Create Hive Error:", error);
