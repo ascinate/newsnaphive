@@ -674,7 +674,7 @@ else {
                             {/* <CustomText weight="medium" style={styles.eventTimeText}>
                               Lock
                             </CustomText> */}
-                            <CustomText weight="bold" style={styles.eventTimeText}>
+                            <CustomText weight="medium" style={styles.eventTimeText}>
                               {item.members.length} {t('members')}
                             </CustomText>
                           </View>
@@ -713,7 +713,7 @@ else {
                                 backgroundColor: '#F3691E',
                                 paddingVertical: 6,
                                 paddingHorizontal: 12,
-                                borderRadius: 6,
+                                borderRadius: 12,
                               }}
                             >
                               <Share2 color="#ffffff" size={18} />
@@ -1053,13 +1053,13 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 16,
     color: '#000',
-    marginBottom: 4,
+    marginBottom: 12,
   },
   eventTimeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 4,
+    marginBottom: 12,
   },
   eventTimeText: {
     fontSize: 12,
