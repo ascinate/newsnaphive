@@ -23,7 +23,7 @@ const profile = require('../../assets/profile.jpg');
 const { width, height } = Dimensions.get('window');
 
 const Home = ({ navigation, route }) => {
-  const [fadeAnim] = useState(new Animated.Value(0)); // Background transition animation
+  const [fadeAnim] = useState(new Animated.Value(0));
   const [refreshing, setRefreshing] = useState(false);
   const [showImportBanner, setShowImportBanner] = useState(true);
   const { events, setEvents } = useContext(EventContext);
@@ -35,9 +35,6 @@ const Home = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
   const [showAutoSyncModal, setShowAutoSyncModal] = useState(false);
 
-
-
-
   const [newPhotosData, setNewPhotosData] = useState({
     count: 0,
     photos: [],
@@ -47,10 +44,7 @@ const Home = ({ navigation, route }) => {
   // Start background transition animation
   useFocusEffect(
     useCallback(() => {
-      // Reset animation to start
       fadeAnim.setValue(0);
-
-      // Start the transition animation
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 1500,
@@ -71,7 +65,7 @@ const Home = ({ navigation, route }) => {
 
     const day = String(dateObj.getDate()).padStart(2, '0');
     const month = monthNames[dateObj.getMonth()];
-    const year = String(dateObj.getFullYear()).slice(-2); // Get last 2 digits of year
+    const year = String(dateObj.getFullYear()).slice(-2);
 
     return `${month} ${day}`;
   };
@@ -84,7 +78,6 @@ const Home = ({ navigation, route }) => {
       const now = new Date();
       const expiryDateTime = new Date(expiryDate);
 
-      // If endTime is provided, set the exact time
       if (endTime) {
         const timeStr = endTime.toLowerCase();
         const [time, period] = timeStr.split(' ');
@@ -104,18 +97,15 @@ const Home = ({ navigation, route }) => {
 
       const timeDiff = expiryDateTime - now;
 
-      // If expired
       if (timeDiff <= 0) {
         return 'Expired';
       }
 
-      // Calculate time remaining
       const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
       const daysLeft = Math.floor(hoursLeft / 24);
       const remainingHours = hoursLeft % 24;
       const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
 
-      // Format output based on time remaining
       if (daysLeft > 0) {
         if (remainingHours > 0) {
           return `${daysLeft}d ${remainingHours}h `;
@@ -133,6 +123,7 @@ const Home = ({ navigation, route }) => {
       return 'N/A';
     }
   };
+
   const removeExpiredEvents = useCallback(() => {
     const now = new Date();
 
@@ -199,8 +190,6 @@ const Home = ({ navigation, route }) => {
     );
   }, [setHives, setEvents]);
 
-
-  // Check for new camera photos on mount and focus
   // Check for new camera photos on mount and focus
   useFocusEffect(
     useCallback(() => {
@@ -226,7 +215,6 @@ const Home = ({ navigation, route }) => {
               previewImage: previewUri || null,
             });
 
-            // Show modal after a short delay
             setTimeout(() => {
               console.log('📱 Showing AutoSync modal');
               setShowAutoSyncModal(true);
@@ -247,10 +235,10 @@ const Home = ({ navigation, route }) => {
     try {
       const resized = await ImageResizer.createResizedImage(
         photo.uri,
-        1600,     // max width
-        1600,     // max height
+        1600,
+        1600,
         "JPEG",
-        80        // quality (KEY)
+        80
       );
 
       return {
@@ -261,10 +249,9 @@ const Home = ({ navigation, route }) => {
       };
     } catch (err) {
       console.log("❌ Compression failed, using original:", err);
-      return photo; // fallback
+      return photo;
     }
   };
-
 
   useEffect(() => {
     removeExpiredEvents();
@@ -305,14 +292,46 @@ const Home = ({ navigation, route }) => {
     }
   }, [route?.params?.newEvent]);
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
+  // Fetch hives function
+  const fetchHives = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
 
-    setTimeout(() => {
-      removeExpiredEvents();
-      setRefreshing(false);
-    }, 1000);
-  }, [removeExpiredEvents]);
+      if (!token) {
+        console.log("No auth token found. Please login first.");
+        return;
+      }
+
+      const res = await axios.get(
+        "https://snaphive-node.vercel.app/api/hives",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setHives(res.data.hives);
+      setEvents(res.data.hives);
+      console.log("User Hives:", res.data.hives);
+
+    } catch (err) {
+      console.error("Error loading hives:", err.response?.data || err);
+    }
+  }, [setHives, setEvents]);
+
+  // Fetch hives on mount
+  useEffect(() => {
+    fetchHives();
+  }, [fetchHives]);
+
+  // Refresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    removeExpiredEvents();
+    await fetchHives();
+    setRefreshing(false);
+  }, [removeExpiredEvents, fetchHives]);
 
   const handleLater = () => {
     Animated.parallel([
@@ -335,38 +354,6 @@ const Home = ({ navigation, route }) => {
       hive.description?.toLowerCase().includes(searchQuery.toLowerCase())
     )
     : [];
-
-  useEffect(() => {
-    const fetchHives = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-
-        if (!token) {
-          console.log("No auth token found. Please login first.");
-          return;
-        }
-
-        const res = await axios.get(
-          "https://snaphive-node.vercel.app/api/hives",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setHives(res.data.hives);
-        setEvents(res.data.hives);
-
-        console.log("User Hives:", res.data.hives);
-
-      } catch (err) {
-        console.error("Error loading hives:", err.response?.data || err);
-      }
-    };
-
-    fetchHives();
-  }, []);
 
   return (
     <SafeAreaProvider>

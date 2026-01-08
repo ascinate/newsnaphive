@@ -10,7 +10,9 @@ import {
   TouchableWithoutFeedback,
   Modal,
   FlatList,
+  Animated,
 } from "react-native";
+
 import { useFocusEffect } from '@react-navigation/native';
 import { BlurView } from "@react-native-community/blur";
 
@@ -96,19 +98,37 @@ const FolderLayout = ({ navigation, route }) => {
   const [viewerVisible, setViewerVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const { updateHivePhotos, updateHiveMembers } = useContext(EventContext);
+  const [galleryLoading, setGalleryLoading] = useState(true);
+const blinkAnim = useRef(new Animated.Value(0.4)).current;
 
   console.log("hive id:" + hiveId);
+
+useEffect(() => {
+  Animated.loop(
+    Animated.sequence([
+      Animated.timing(blinkAnim, {
+        toValue: 1,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+      Animated.timing(blinkAnim, {
+        toValue: 0.4,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+    ])
+  ).start();
+}, []);
+
   useFocusEffect(
     useCallback(() => {
       const fetchHive = async () => {
         try {
+          setGalleryLoading(true); // 🔥 start loading
+
           const token = await AsyncStorage.getItem("token");
           const storedUser = await AsyncStorage.getItem("user");
-
           if (!token || !storedUser) return;
-
-          const loggedInUser = JSON.parse(storedUser);
-          const loggedInUserId = loggedInUser._id;
 
           const res = await axios.get(
             `https://snaphive-node.vercel.app/api/hives/${hiveId}`,
@@ -116,40 +136,15 @@ const FolderLayout = ({ navigation, route }) => {
           );
 
           const hive = res.data.data;
-
-          // PHOTOS
           setUploadedImages(hive.images || []);
 
-          const combinedMembers = [
-            {
-              _id: hive.user._id,
-              email: hive.user.email,
-              name: hive.user.name,
-              profileImage: hive.user.profileImage,
-              role: "owner",
-            },
-            ...(hive.members || []).map(m => ({
-              _id: m.memberId?._id,
-              email: m.memberId?.email || m.email,
-              name: m.memberId?.name,
-              profileImage: m.memberId?.profileImage,
-              role: "member",
-              status: m.status,
-            })),
-          ];
-
-          // 🔥 REMOVE LOGGED-IN USER ONLY
-          const finalMembers = combinedMembers.filter(
-            m => m._id?.toString() !== loggedInUserId
-          );
-
-          setMembersList(finalMembers);
-          updateHiveMembers(hiveId, combinedMembers);
-
         } catch (err) {
-          console.error("Error fetching hive:", err);
+          console.error(err);
+        } finally {
+          setGalleryLoading(false); // 🔥 stop loading
         }
       };
+
 
       if (hiveId) fetchHive();
 
@@ -301,6 +296,31 @@ const FolderLayout = ({ navigation, route }) => {
 
     setAiMessages((prev) => [...prev, userImg, aiImg]);
   };
+
+
+
+
+
+
+
+
+  const DemoGalleryBoxes = () => {
+  return (
+    <View style={styles.galleryPickerGrid}>
+      {Array.from({ length: 9 }).map((_, index) => (
+        <Animated.View
+          key={`demo-${index}`}
+          style={[
+            styles.galleryPickerImageWrapper,
+            styles.demoBox,
+            { opacity: blinkAnim },
+          ]}
+        />
+      ))}
+    </View>
+  );
+};
+
 
   return (
     <ScreenLayout
@@ -729,24 +749,32 @@ const FolderLayout = ({ navigation, route }) => {
                       </TouchableOpacity>
                     </View>
 
-                    <ScrollView
-                      style={styles.galleryPickerScroll}
-                      showsVerticalScrollIndicator={false}>
-                      {uploadedImages.length === 0 ? (
-                        <Text style={styles.infoText}>No photos available</Text>
-                      ) : (
-                        <View style={styles.galleryPickerGrid}>
-                          {uploadedImages.map((uri, index) => (
-                            <TouchableOpacity
-                              key={`gallery-select-${index}`}
-                              style={styles.galleryPickerImageWrapper}
-                              onPress={() => handleGalleryImageSelect(uri)}>
-                              <Image source={{ uri }} style={styles.galleryPickerImage} />
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      )}
-                    </ScrollView>
+           <ScrollView
+  style={styles.galleryPickerScroll}
+  showsVerticalScrollIndicator={false}
+>
+  {galleryLoading ? (
+    <DemoGalleryBoxes />
+  ) : uploadedImages.length === 0 ? (
+    <Text style={styles.infoText}>No photos available</Text>
+  ) : (
+    <View style={styles.galleryPickerGrid}>
+      {uploadedImages.map((uri, index) => (
+        <TouchableOpacity
+          key={`gallery-select-${index}`}
+          style={styles.galleryPickerImageWrapper}
+          onPress={() => handleGalleryImageSelect(uri)}
+        >
+          <Image
+            source={{ uri }}
+            style={styles.galleryPickerImage}
+          />
+        </TouchableOpacity>
+      ))}
+    </View>
+  )}
+</ScrollView>
+
                   </View>
                 </TouchableWithoutFeedback>
               </View>
@@ -1221,6 +1249,11 @@ const styles = StyleSheet.create({
     right: 20,
     zIndex: 10,
   },
+
+demoBox: {
+  backgroundColor: '#E5E7EB',
+  opacity: 0.7,
+}
 
 
 });
