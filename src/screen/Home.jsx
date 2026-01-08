@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useContext, useRef } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Platform, Animated, TextInput, TouchableWithoutFeedback } from 'react-native';
+import { View, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Platform, Animated, TextInput, TouchableWithoutFeedback, Text } from 'react-native';
 import { RefreshControl } from 'react-native';
 import { Sparkles, Users, FileImage, Clock5, ImagePlus, MoveRight, Plus, FolderOpen, CalendarDays, Search, EllipsisVertical, Share2, Lock } from 'lucide-react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import AutoSyncModal from '../components/AutoSyncModal';
 import { checkForNewCameraPhotos } from '../utils/photoDetector';
-import {ImageResizer} from "react-native-image-resizer";
+import { ImageResizer } from "react-native-image-resizer";
 // assets
 const hero = require('../../assets/hero.png');
 const profile = require('../../assets/profile.jpg');
@@ -461,7 +461,7 @@ const Home = ({ navigation, route }) => {
                     {t('letMemoriesFlow')}
                   </CustomText>
 
-                  {/* <TouchableOpacity
+                  <TouchableOpacity
                     style={styles.importBtnWhite}
                     onPress={() => navigation.navigate('CreateHive')}
                   >
@@ -471,22 +471,7 @@ const Home = ({ navigation, route }) => {
                     <CustomText weight="bold" style={{ color: '#DA3C84', fontSize: 14 }}>
                       {t('createNewHive')}
                     </CustomText>
-                  </TouchableOpacity> */}
-
-
-                  <TouchableOpacity
-                    style={styles.importBtnWhite}
-
-                  >
-                    <View>
-                      <Plus color="#DA3C84" size={20} />
-                    </View>
-                    <CustomText weight="bold" style={{ color: '#DA3C84', fontSize: 14 }}>
-                      {t('createNewHive')}
-                    </CustomText>
                   </TouchableOpacity>
-
-
                 </View>
               </View>
             </View>
@@ -648,21 +633,18 @@ const Home = ({ navigation, route }) => {
                           style={styles.eventImage}
                         />
 
-                        <TouchableWithoutFeedback
-                          onPress={() => navigation.navigate("InviteMember")}
-                        >
+                        <TouchableWithoutFeedback>
                           <View
                             style={{
                               position: "absolute",
-                              right: 18,
-                              top: 20,
+                              right: 15,
+                              top: 15,
                               padding: 8,
                               borderRadius: 50,
-                              backgroundColor: "rgba(255,255,255,0.7)",
+                              backgroundColor: "rgba(134, 134, 134, 0.7)",
                             }}
                           >
-                 
-                            <Lock size={14} color="#2e2e2eff"/>
+                            <Lock size={14} color="#f5f4f4ff" />
                           </View>
                         </TouchableWithoutFeedback>
 
@@ -690,22 +672,25 @@ const Home = ({ navigation, route }) => {
                               justifyContent: 'flex-start',
                             }}
                           >
-                            <Users width={16} height={16} color="#F98935" style={{ display: 'grid' }}/>
-                            <CustomText weight="medium" style={styles.eventTimeText}>
+                            <Users width={16} height={16} color="#F98935" style={{ display: 'grid' }} />
+                            {/* <CustomText weight="medium" style={styles.eventTimeText}>
                               Lock
+                            </CustomText> */}
+                            <CustomText weight="bold" style={styles.eventTimeText}>
+                              {item.members.length} {t('members')}
                             </CustomText>
                           </View>
 
-                          <CustomText weight="medium" style={styles.eventDescription}>
+                          {/* <CustomText weight="medium" style={styles.eventDescription}>
                             {item.description
                               ? item.description.length > 15
                                 ? item.description.substring(0, 15) + '...'
                                 : item.description
                               : "No description"}
-                          </CustomText>
+                          </CustomText> */}
 
 
-                          <View style={styles.memberRow}>
+                          {/* <View style={styles.memberRow}>
                             <View style={styles.memberAvatar}>
                               <Image source={profile} style={styles.memberDP} />
                             </View>
@@ -719,7 +704,28 @@ const Home = ({ navigation, route }) => {
                             <CustomText weight="bold" style={{ marginLeft: 20 }}>
                               {item.members.length} {t('members')}
                             </CustomText>
-                          </View>
+                          </View> */}
+                          <TouchableOpacity style={{ width: '100%', margin: 'auto', marginTop: 10 }} onPress={() => { navigation.navigate('InviteMember') }}>
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 6,
+                                backgroundColor: '#F3691E',
+                                paddingVertical: 6,
+                                paddingHorizontal: 12,
+                                borderRadius: 6,
+                              }}
+                            >
+                              <Share2 color="#ffffff" size={18} />
+                              <CustomText weight="bold" style={{ color: '#fff' }}>
+                                Share
+                              </CustomText>
+                            </View>
+                          </TouchableOpacity>
+
+
                         </View>
                       </View>
                     </TouchableOpacity>
@@ -1031,7 +1037,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 140,
     resizeMode: 'cover',
-      borderTopLeftRadius: 8,
+    borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
     borderBottomRightRadius: 0,
     borderBottomLeftRadius: 0,
@@ -1040,7 +1046,7 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 14,
     paddingLeft: 14,
-    paddingRight: 4,
+    paddingRight: 14,
     backgroundColor: '#fff',
   },
   eventTitle: {
