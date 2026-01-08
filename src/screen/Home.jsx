@@ -19,6 +19,7 @@ import { ImageResizer } from "react-native-image-resizer";
 const hero = require('../../assets/hero.png');
 const profile = require('../../assets/profile.jpg');
 
+const AUTO_SYNC_LAST_TS_KEY = "AUTO_SYNC_LAST_HANDLED_TIMESTAMP";
 
 const { width, height } = Dimensions.get('window');
 
@@ -204,22 +205,32 @@ const Home = ({ navigation, route }) => {
             photosLength: result.photos.length
           });
 
-          if (result.hasNewPhotos && result.photoCount > 0) {
-            const previewUri = result.photos[0]?.uri;
+    if (result.hasNewPhotos && result.photoCount > 0) {
+  const latestPhotoTs = result.photos[0]?.timestamp;
 
-            console.log('✅ Setting photo data, preview:', previewUri ? 'exists' : 'missing');
+  const lastHandledTs = await AsyncStorage.getItem(
+    AUTO_SYNC_LAST_TS_KEY
+  );
 
-            setNewPhotosData({
-              count: result.photoCount,
-              photos: result.photos,
-              previewImage: previewUri || null,
-            });
+  // 🛑 If we've already handled these photos, do nothing
+  if (lastHandledTs && Number(lastHandledTs) >= latestPhotoTs) {
+    console.log("⏭️ AutoSync already handled for these photos");
+    return;
+  }
 
-            setTimeout(() => {
-              console.log('📱 Showing AutoSync modal');
-              setShowAutoSyncModal(true);
-            }, 500);
-          } else {
+  const previewUri = result.photos[0]?.uri;
+
+  setNewPhotosData({
+    count: result.photoCount,
+    photos: result.photos,
+    previewImage: previewUri || null,
+  });
+
+  setTimeout(() => {
+    setShowAutoSyncModal(true);
+  }, 500);
+}
+else {
             console.log('ℹ️ No new photos found');
           }
         } catch (error) {
@@ -767,30 +778,33 @@ const Home = ({ navigation, route }) => {
           visible={showAutoSyncModal}
           photoCount={newPhotosData.count}
           previewImage={newPhotosData.previewImage}
-          onCreate={async () => {
-            setShowAutoSyncModal(false);
+onCreate={async () => {
+  setShowAutoSyncModal(false);
 
-            // 🔥 COMPRESS PHOTOS HERE (CRITICAL)
-            const compressedPhotos = [];
+  const compressedPhotos = [];
 
-            for (const photo of newPhotosData.photos) {
-              const compressed = await compressPhoto(photo);
-              compressedPhotos.push(compressed);
-            }
+  for (const photo of newPhotosData.photos) {
+    const compressed = await compressPhoto(photo);
+    compressedPhotos.push(compressed);
+  }
 
-            console.log(
-              "📦 AutoSync photos compressed:",
-              compressedPhotos.map(p => p.uri)
-            );
+  await AsyncStorage.setItem(
+    "AUTO_SYNC_PHOTOS",
+    JSON.stringify(compressedPhotos)
+  );
 
-            // ✅ STORE COMPRESSED PHOTOS ONLY
-            await AsyncStorage.setItem(
-              "AUTO_SYNC_PHOTOS",
-              JSON.stringify(compressedPhotos)
-            );
+  // ✅ SAVE HANDLED TIMESTAMP
+  if (newPhotosData.photos.length > 0) {
+    const latestTs = newPhotosData.photos[0].timestamp;
+    await AsyncStorage.setItem(
+      AUTO_SYNC_LAST_TS_KEY,
+      String(latestTs)
+    );
+  }
 
-            navigation.navigate("CreateHive");
-          }}
+  navigation.navigate("CreateHive");
+}}
+
 
           onSkip={() => {
             console.log('⏭️ Skip clicked');
