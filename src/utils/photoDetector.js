@@ -1,6 +1,15 @@
 import { Platform, PermissionsAndroid } from 'react-native';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 
+// Helper function to get date string in format "YYYY-MM-DD"
+const getDateString = (timestamp) => {
+  const date = new Date(timestamp * 1000);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`; // e.g., "2026-01-09"
+};
+
 export const checkForNewCameraPhotos = async () => {
   try {
     // Request permissions
@@ -25,7 +34,7 @@ export const checkForNewCameraPhotos = async () => {
 
     if (!hasPermission) {
       console.log('❌ No permission for photos');
-      return { hasNewPhotos: false, photoCount: 0, photos: [] };
+      return { hasNewPhotos: false, photoCount: 0, photos: [], latestDate: null };
     }
 
     console.log('✅ Permission granted, fetching photos...');
@@ -46,17 +55,21 @@ export const checkForNewCameraPhotos = async () => {
     const photos = await CameraRoll.getPhotos(params);
     console.log('📸 Total photos fetched:', photos.edges.length);
 
-    // Filter today's photos
+    // Get dates for last 3 days
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(today.getDate() - 2); // Today, yesterday, day before
+    threeDaysAgo.setHours(0, 0, 0, 0);
 
-    const todayPhotos = photos.edges
+    // Filter photos from last 3 days
+    const recentPhotos = photos.edges
       .map(edge => {
         try {
           return {
             uri: edge.node.image.uri,
             timestamp: edge.node.timestamp,
             filename: edge.node.image.filename || 'unknown',
+            dateString: getDateString(edge.node.timestamp),
           };
         } catch (err) {
           console.log('⚠️ Error mapping photo:', err);
@@ -68,25 +81,47 @@ export const checkForNewCameraPhotos = async () => {
         
         try {
           const photoDate = new Date(photo.timestamp * 1000);
-          photoDate.setHours(0, 0, 0, 0);
-          return photoDate.getTime() === today.getTime();
+          return photoDate >= threeDaysAgo;
         } catch (err) {
           console.log('⚠️ Error filtering photo:', err);
           return false;
         }
       })
-      .sort((a, b) => b.timestamp - a.timestamp);
+      .sort((a, b) => b.timestamp - a.timestamp); // Newest first
 
-    console.log('📸 Today\'s photos:', todayPhotos.length);
+    console.log('📸 Recent photos (last 3 days):', recentPhotos.length);
+
+    // Group photos by date
+    const photosByDate = {};
+    recentPhotos.forEach(photo => {
+      if (!photosByDate[photo.dateString]) {
+        photosByDate[photo.dateString] = [];
+      }
+      photosByDate[photo.dateString].push(photo);
+    });
+
+    // Get the latest date that has photos
+    const latestDate = recentPhotos.length > 0 ? recentPhotos[0].dateString : null;
+
+    console.log('📅 Photos grouped by date:', Object.keys(photosByDate));
+    console.log('📅 Latest date with photos:', latestDate);
 
     return {
-      hasNewPhotos: todayPhotos.length > 0,
-      photoCount: todayPhotos.length,
-      photos: todayPhotos,
+      hasNewPhotos: recentPhotos.length > 0,
+      photoCount: recentPhotos.length,
+      photos: recentPhotos,
+      photosByDate: photosByDate,
+      latestDate: latestDate,
     };
 
   } catch (error) {
     console.error('❌ Error in checkForNewCameraPhotos:', error);
-    return { hasNewPhotos: false, photoCount: 0, photos: [] };
+    return { 
+      hasNewPhotos: false, 
+      photoCount: 0, 
+      photos: [], 
+      photosByDate: {},
+      latestDate: null 
+    };
   }
 };

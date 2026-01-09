@@ -17,7 +17,7 @@ const TopNav = () => {
     <View style={styles.container}>
       <View style={styles.leftSection}>
         <Image source={logo} style={{ width: 100, height: 45, resizeMode: "contain", }} />
-
+            <Text>update 31</Text>
       </View>
 
       <TouchableOpacity

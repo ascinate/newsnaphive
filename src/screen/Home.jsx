@@ -19,7 +19,7 @@ import { ImageResizer } from "react-native-image-resizer";
 const hero = require('../../assets/hero.png');
 const profile = require('../../assets/profile.jpg');
 
-const AUTO_SYNC_LAST_TS_KEY = "AUTO_SYNC_LAST_HANDLED_TIMESTAMP";
+const AUTO_SYNC_HANDLED_DATES_KEY = "AUTO_SYNC_HANDLED_DATES";
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,11 +36,12 @@ const Home = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
   const [showAutoSyncModal, setShowAutoSyncModal] = useState(false);
 
-  const [newPhotosData, setNewPhotosData] = useState({
-    count: 0,
-    photos: [],
-    previewImage: null,
-  });
+const [newPhotosData, setNewPhotosData] = useState({
+  count: 0,
+  photos: [],
+  previewImage: null,
+  dateString: null, // Add this
+});
 
   // Start background transition animation
   useFocusEffect(
@@ -192,58 +193,70 @@ const Home = ({ navigation, route }) => {
   }, [setHives, setEvents]);
 
   // Check for new camera photos on mount and focus
-  useFocusEffect(
-    useCallback(() => {
-      const checkPhotos = async () => {
-        try {
-          console.log('🔍 Checking for new photos...');
-          const result = await checkForNewCameraPhotos();
+useFocusEffect(
+  useCallback(() => {
+    const checkPhotos = async () => {
+      try {
+        console.log('🔍 Checking for new photos...');
+        const result = await checkForNewCameraPhotos();
 
-          console.log('📊 Result:', {
-            hasNewPhotos: result.hasNewPhotos,
-            count: result.photoCount,
-            photosLength: result.photos.length
+        console.log('📊 Result:', {
+          hasNewPhotos: result.hasNewPhotos,
+          count: result.photoCount,
+          photosLength: result.photos.length,
+          latestDate: result.latestDate
+        });
+
+        if (result.hasNewPhotos && result.photoCount > 0 && result.latestDate) {
+          // Get the list of dates we've already handled
+          const handledDatesJson = await AsyncStorage.getItem(AUTO_SYNC_HANDLED_DATES_KEY);
+          const handledDates = handledDatesJson ? JSON.parse(handledDatesJson) : [];
+
+          console.log('📅 Already handled dates:', handledDates);
+          console.log('📅 Latest photo date:', result.latestDate);
+
+          // Check if we've already handled this date
+          if (handledDates.includes(result.latestDate)) {
+            console.log("⏭️ AutoSync already handled for date:", result.latestDate);
+            return;
+          }
+
+          // Get photos from the latest unhandled date
+          const latestDatePhotos = result.photosByDate[result.latestDate] || [];
+
+          if (latestDatePhotos.length === 0) {
+            console.log('ℹ️ No photos for latest date');
+            return;
+          }
+
+          const previewUri = latestDatePhotos[0]?.uri;
+
+          setNewPhotosData({
+            count: latestDatePhotos.length,
+            photos: latestDatePhotos,
+            previewImage: previewUri || null,
+            dateString: result.latestDate, // Store the date
           });
 
-    if (result.hasNewPhotos && result.photoCount > 0) {
-  const latestPhotoTs = result.photos[0]?.timestamp;
-
-  const lastHandledTs = await AsyncStorage.getItem(
-    AUTO_SYNC_LAST_TS_KEY
-  );
-
-  // 🛑 If we've already handled these photos, do nothing
-  if (lastHandledTs && Number(lastHandledTs) >= latestPhotoTs) {
-    console.log("⏭️ AutoSync already handled for these photos");
-    return;
-  }
-
-  const previewUri = result.photos[0]?.uri;
-
-  setNewPhotosData({
-    count: result.photoCount,
-    photos: result.photos,
-    previewImage: previewUri || null,
-  });
-
-  setTimeout(() => {
-    setShowAutoSyncModal(true);
-  }, 500);
-}
-else {
-            console.log('ℹ️ No new photos found');
-          }
-        } catch (error) {
-          console.error('❌ Error checking photos:', error);
+          setTimeout(() => {
+            setShowAutoSyncModal(true);
+          }, 500);
+        } else {
+          console.log('ℹ️ No new photos found');
         }
-      };
+      } catch (error) {
+        console.error('❌ Error checking photos:', error);
+      }
+    };
 
-      checkPhotos();
-    }, [])
-  );
+    checkPhotos();
+  }, [])
+);
 
-  const compressPhoto = async (photo) => {
+  const compressPhoto = async (photo, index) => {
     try {
+      console.log(`🔄 Compressing photo ${index + 1}:`, photo.uri);
+
       const resized = await ImageResizer.createResizedImage(
         photo.uri,
         1600,
@@ -252,15 +265,24 @@ else {
         80
       );
 
+      console.log(`✅ Compressed photo ${index + 1}:`, resized.uri);
+
       return {
-        ...photo,
         uri: resized.uri,
         type: "image/jpeg",
-        fileName: photo.fileName || "auto_sync.jpg",
+        fileName: photo.fileName || `auto_sync_${index + 1}_${Date.now()}.jpg`,
+        timestamp: photo.timestamp,
+        dateString: photo.dateString,
       };
     } catch (err) {
-      console.log("❌ Compression failed, using original:", err);
-      return photo;
+      console.log(`❌ Compression failed for photo ${index + 1}, using original:`, err);
+      return {
+        uri: photo.uri,
+        type: "image/jpeg",
+        fileName: photo.fileName || `auto_sync_${index + 1}_${Date.now()}.jpg`,
+        timestamp: photo.timestamp,
+        dateString: photo.dateString,
+      };
     }
   };
 
@@ -793,13 +815,26 @@ onCreate={async () => {
     JSON.stringify(compressedPhotos)
   );
 
-  // ✅ SAVE HANDLED TIMESTAMP
-  if (newPhotosData.photos.length > 0) {
-    const latestTs = newPhotosData.photos[0].timestamp;
-    await AsyncStorage.setItem(
-      AUTO_SYNC_LAST_TS_KEY,
-      String(latestTs)
-    );
+  // ✅ SAVE THE DATE AS HANDLED
+  if (newPhotosData.dateString) {
+    try {
+      // Get existing handled dates
+      const handledDatesJson = await AsyncStorage.getItem(AUTO_SYNC_HANDLED_DATES_KEY);
+      const handledDates = handledDatesJson ? JSON.parse(handledDatesJson) : [];
+      
+      // Add the new date if not already there
+      if (!handledDates.includes(newPhotosData.dateString)) {
+        handledDates.push(newPhotosData.dateString);
+        await AsyncStorage.setItem(
+          AUTO_SYNC_HANDLED_DATES_KEY,
+          JSON.stringify(handledDates)
+        );
+        console.log('✅ Saved handled date:', newPhotosData.dateString);
+        console.log('📅 All handled dates:', handledDates);
+      }
+    } catch (error) {
+      console.error('❌ Error saving handled date:', error);
+    }
   }
 
   navigation.navigate("CreateHive");
