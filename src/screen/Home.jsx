@@ -253,38 +253,53 @@ useFocusEffect(
   }, [])
 );
 
-  const compressPhoto = async (photo, index) => {
-    try {
-      console.log(`🔄 Compressing photo ${index + 1}:`, photo.uri);
+const compressPhoto = async (photo, index) => {
+  try {
+    console.log(`🔄 Compressing photo ${index + 1}:`, photo.uri);
 
-      const resized = await ImageResizer.createResizedImage(
-        photo.uri,
-        1600,
-        1600,
-        "JPEG",
-        80
-      );
+    const resized = await ImageResizer.createResizedImage(
+      photo.uri,
+      1600,
+      1600,
+      "JPEG",
+      80
+    );
 
-      console.log(`✅ Compressed photo ${index + 1}:`, resized.uri);
+    console.log(`✅ Compressed photo ${index + 1}:`, resized.uri);
 
-      return {
-        uri: resized.uri,
-        type: "image/jpeg",
-        fileName: photo.fileName || `auto_sync_${index + 1}_${Date.now()}.jpg`,
-        timestamp: photo.timestamp,
-        dateString: photo.dateString,
-      };
-    } catch (err) {
-      console.log(`❌ Compression failed for photo ${index + 1}, using original:`, err);
-      return {
-        uri: photo.uri,
-        type: "image/jpeg",
-        fileName: photo.fileName || `auto_sync_${index + 1}_${Date.now()}.jpg`,
-        timestamp: photo.timestamp,
-        dateString: photo.dateString,
-      };
-    }
-  };
+    // Create unique filename using timestamp, random ID, and index
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 9);
+    const uniqueFileName = photo.fileName 
+      ? `${timestamp}_${randomId}_${index}_${photo.fileName}` 
+      : `auto_sync_${timestamp}_${randomId}_${index}.jpg`;
+
+    return {
+      uri: resized.uri,
+      type: "image/jpeg",
+      fileName: uniqueFileName,
+      timestamp: photo.timestamp,
+      dateString: photo.dateString,
+    };
+  } catch (err) {
+    console.log(`❌ Compression failed for photo ${index + 1}, using original:`, err);
+    
+    // Even for failed compression, create unique filename
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 9);
+    const uniqueFileName = photo.fileName 
+      ? `${timestamp}_${randomId}_${index}_${photo.fileName}` 
+      : `auto_sync_${timestamp}_${randomId}_${index}.jpg`;
+    
+    return {
+      uri: photo.uri,
+      type: "image/jpeg",
+      fileName: uniqueFileName,
+      timestamp: photo.timestamp,
+      dateString: photo.dateString,
+    };
+  }
+};
 
   useEffect(() => {
     removeExpiredEvents();

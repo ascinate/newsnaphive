@@ -151,35 +151,69 @@ const CreateHive = ({ navigation, route }) => {
         !selectedOption ||                  // Messaging settings
         !checked;                           // Privacy policy
 
-    const uploadAutoSyncPhotos = async (hiveId) => {
-        const storedPhotos = await AsyncStorage.getItem("AUTO_SYNC_PHOTOS");
-        if (!storedPhotos) return;
+const uploadAutoSyncPhotos = async (hiveId) => {
+  try {
+    const storedPhotos = await AsyncStorage.getItem("AUTO_SYNC_PHOTOS");
+    if (!storedPhotos) {
+      console.log('ℹ️ No auto-sync photos found');
+      return;
+    }
 
-        const photos = JSON.parse(storedPhotos).slice(0, 20);
-        const userId = await AsyncStorage.getItem("userId");
-        const token = await AsyncStorage.getItem("token");
+    const photos = JSON.parse(storedPhotos).slice(0, 20);
+    console.log('📸 Uploading', photos.length, 'photos to Firebase...');
+    
+    const userId = await AsyncStorage.getItem("userId");
+    const token = await AsyncStorage.getItem("token");
 
-        // 🔥 PARALLEL uploads
-        const uploadPromises = photos.map(photo =>
-            uploadImageToFirebase(photo, userId, hiveId)
-        );
+    // 🔥 Upload each photo one by one with a small delay
+    const uploadedUrls = [];
+    for (let i = 0; i < photos.length; i++) {
+      const photo = photos[i];
+      console.log(`🔄 Uploading photo ${i + 1}/${photos.length}`);
+      console.log(`📸 Photo URI:`, photo.uri);
+      console.log(`📸 Photo fileName:`, photo.fileName);
+      
+      try {
+        const url = await uploadImageToFirebase(photo, userId, hiveId);
+        uploadedUrls.push(url);
+        console.log(`✅ Uploaded photo ${i + 1}:`, url);
+        
+        // Small delay to ensure unique timestamps
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (uploadError) {
+        console.error(`❌ Failed to upload photo ${i + 1}:`, uploadError);
+      }
+    }
 
-        const uploadedUrls = await Promise.all(uploadPromises);
+    console.log('✅ All photos uploaded. Total:', uploadedUrls.length);
+    console.log('📝 Uploaded URLs:', uploadedUrls);
 
-        await fetch(
-            `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ images: uploadedUrls }),
-            }
-        );
+    // Send all uploaded URLs to backend
+    if (uploadedUrls.length > 0) {
+      const response = await fetch(
+        `https://snaphive-node.vercel.app/api/hives/${hiveId}/images`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ images: uploadedUrls }),
+        }
+      );
 
-        await AsyncStorage.removeItem("AUTO_SYNC_PHOTOS");
-    };
+      const result = await response.json();
+      console.log('✅ Backend response:', result);
+    }
+
+    // Clear the stored photos after successful upload
+    await AsyncStorage.removeItem("AUTO_SYNC_PHOTOS");
+    console.log('✅ Cleared AUTO_SYNC_PHOTOS from storage');
+    
+  } catch (error) {
+    console.error('❌ Error in uploadAutoSyncPhotos:', error);
+  }
+};
 
 
 
