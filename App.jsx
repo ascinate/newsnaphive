@@ -57,6 +57,8 @@ import MyHives from './src/screen/MyHives'
 import AutoCreateHive from './src/screen/AutoCreateHive'
 import PendingRequest from './src/morescreen/PendingRequest'
 import MemberStatus from './src/morescreen/MemberStatus'
+import AutoSyncScreen from './src/screen/AutoSyncScreen'
+ 
 // Demo camera UI
 import ClickPhotoTwo from "./src/morescreen/ClickPhotoTwo";
 import ClickPhotoThree from "./src/morescreen/ClickPhotoThree";
@@ -64,8 +66,6 @@ import ClickPhotoThree from "./src/morescreen/ClickPhotoThree";
 const Stack = createNativeStackNavigator();
 
 const App = () => {
-
-
 
   const [language, setLanguage] = useState(i18n.language);
 
@@ -137,6 +137,7 @@ const App = () => {
                   <Stack.Screen name="AutoCreateHive" component={AutoCreateHive}  options={{ headerShown: false }}/>
                   {/* <Stack.Screen name="PendingRequest" component={PendingRequest} /> */}
                   {/* <Stack.Screen name="MemberStatus" component={MemberStatus} /> */}
+                  <Stack.Screen name="AutoSyncScreen" component={AutoSyncScreen} />
                 </Stack.Navigator>
               </NavigationContainer>
             </I18nextProvider>

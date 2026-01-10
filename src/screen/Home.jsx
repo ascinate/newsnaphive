@@ -18,8 +18,8 @@ import { ImageResizer } from "react-native-image-resizer";
 // assets
 const hero = require('../../assets/hero.png');
 const profile = require('../../assets/profile.jpg');
-
 const AUTO_SYNC_HANDLED_DATES_KEY = "AUTO_SYNC_HANDLED_DATES";
+const AUTO_SYNC_SKIPPED_DATES_KEY = "AUTO_SYNC_SKIPPED_DATES"; // Add this line
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,12 +36,12 @@ const Home = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
   const [showAutoSyncModal, setShowAutoSyncModal] = useState(false);
 
-const [newPhotosData, setNewPhotosData] = useState({
-  count: 0,
-  photos: [],
-  previewImage: null,
-  dateString: null, // Add this
-});
+  const [newPhotosData, setNewPhotosData] = useState({
+    count: 0,
+    photos: [],
+    previewImage: null,
+    dateString: null, // Add this
+  });
 
   // Start background transition animation
   useFocusEffect(
@@ -192,114 +192,145 @@ const [newPhotosData, setNewPhotosData] = useState({
     );
   }, [setHives, setEvents]);
 
+
+
+  const clearSkippedDatesIfNeeded = async (latestDate) => {
+    try {
+      const skippedDatesJson = await AsyncStorage.getItem(AUTO_SYNC_SKIPPED_DATES_KEY);
+      const skippedDates = skippedDatesJson ? JSON.parse(skippedDatesJson) : [];
+
+      // If we have skipped dates, check if the latest date is newer than any skipped date
+      if (skippedDates.length > 0) {
+        const latestSkippedDate = skippedDates.sort().reverse()[0];
+
+        // If new photos are from a date after the latest skipped date, clear skipped list
+        if (latestDate > latestSkippedDate) {
+          await AsyncStorage.removeItem(AUTO_SYNC_SKIPPED_DATES_KEY);
+          console.log('🔄 Cleared skipped dates - new photos detected');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error clearing skipped dates:', error);
+    }
+  };
+
+
+
+
   // Check for new camera photos on mount and focus
-useFocusEffect(
-  useCallback(() => {
-    const checkPhotos = async () => {
-      try {
-        console.log('🔍 Checking for new photos...');
-        const result = await checkForNewCameraPhotos();
+  // Check for new camera photos on mount and focus
+  useFocusEffect(
+    useCallback(() => {
+      const checkPhotos = async () => {
+        try {
+          console.log('🔍 Checking for new photos...');
+          const result = await checkForNewCameraPhotos();
 
-        console.log('📊 Result:', {
-          hasNewPhotos: result.hasNewPhotos,
-          count: result.photoCount,
-          photosLength: result.photos.length,
-          latestDate: result.latestDate
-        });
-
-        if (result.hasNewPhotos && result.photoCount > 0 && result.latestDate) {
-          // Get the list of dates we've already handled
-          const handledDatesJson = await AsyncStorage.getItem(AUTO_SYNC_HANDLED_DATES_KEY);
-          const handledDates = handledDatesJson ? JSON.parse(handledDatesJson) : [];
-
-          console.log('📅 Already handled dates:', handledDates);
-          console.log('📅 Latest photo date:', result.latestDate);
-
-          // Check if we've already handled this date
-          if (handledDates.includes(result.latestDate)) {
-            console.log("⏭️ AutoSync already handled for date:", result.latestDate);
-            return;
-          }
-
-          // Get photos from the latest unhandled date
-          const latestDatePhotos = result.photosByDate[result.latestDate] || [];
-
-          if (latestDatePhotos.length === 0) {
-            console.log('ℹ️ No photos for latest date');
-            return;
-          }
-
-          const previewUri = latestDatePhotos[0]?.uri;
-
-          setNewPhotosData({
-            count: latestDatePhotos.length,
-            photos: latestDatePhotos,
-            previewImage: previewUri || null,
-            dateString: result.latestDate, // Store the date
+          console.log('📊 Result:', {
+            hasNewPhotos: result.hasNewPhotos,
+            count: result.photoCount,
+            photosLength: result.photos.length,
+            latestDate: result.latestDate
           });
 
-          setTimeout(() => {
-            setShowAutoSyncModal(true);
-          }, 500);
-        } else {
-          console.log('ℹ️ No new photos found');
+          if (result.hasNewPhotos && result.photoCount > 0 && result.latestDate) {
+            // Clear skipped dates if new photos are detected
+            await clearSkippedDatesIfNeeded(result.latestDate);
+
+            // Get the list of dates we've already handled (created hive for)
+            const handledDatesJson = await AsyncStorage.getItem(AUTO_SYNC_HANDLED_DATES_KEY);
+            const handledDates = handledDatesJson ? JSON.parse(handledDatesJson) : [];
+
+            // Get the list of dates we've skipped
+            const skippedDatesJson = await AsyncStorage.getItem(AUTO_SYNC_SKIPPED_DATES_KEY);
+            const skippedDates = skippedDatesJson ? JSON.parse(skippedDatesJson) : [];
+
+            console.log('📅 Already handled dates:', handledDates);
+            console.log('📅 Already skipped dates:', skippedDates);
+
+            // Get all available dates sorted from newest to oldest
+            const availableDates = Object.keys(result.photosByDate).sort().reverse();
+            console.log('📅 Available dates:', availableDates);
+
+            // Find the first date that hasn't been handled or skipped
+            let dateToShow = null;
+            for (const date of availableDates) {
+              if (!handledDates.includes(date) && !skippedDates.includes(date)) {
+                dateToShow = date;
+                break;
+              }
+            }
+
+            console.log('📅 Date to show modal for:', dateToShow);
+
+            if (!dateToShow) {
+              console.log('ℹ️ All dates have been handled or skipped');
+              return;
+            }
+
+            // Get photos for the selected date
+            const datePhotos = result.photosByDate[dateToShow] || [];
+
+            if (datePhotos.length === 0) {
+              console.log('ℹ️ No photos for date:', dateToShow);
+              return;
+            }
+
+            const previewUri = datePhotos[0]?.uri;
+
+            setNewPhotosData({
+              count: datePhotos.length,
+              photos: datePhotos,
+              previewImage: previewUri || null,
+              dateString: dateToShow,
+            });
+
+            setTimeout(() => {
+              setShowAutoSyncModal(true);
+            }, 500);
+          } else {
+            console.log('ℹ️ No new photos found');
+          }
+        } catch (error) {
+          console.error('❌ Error checking photos:', error);
         }
-      } catch (error) {
-        console.error('❌ Error checking photos:', error);
-      }
-    };
+      };
 
-    checkPhotos();
-  }, [])
-);
+      checkPhotos();
+    }, [])
+  );
+  const compressPhoto = async (photo, index) => {
+    try {
+      console.log(`🔄 Compressing photo ${index + 1}:`, photo.uri);
 
-const compressPhoto = async (photo, index) => {
-  try {
-    console.log(`🔄 Compressing photo ${index + 1}:`, photo.uri);
+      const resized = await ImageResizer.createResizedImage(
+        photo.uri,
+        1600,
+        1600,
+        "JPEG",
+        80
+      );
 
-    const resized = await ImageResizer.createResizedImage(
-      photo.uri,
-      1600,
-      1600,
-      "JPEG",
-      80
-    );
+      console.log(`✅ Compressed photo ${index + 1}:`, resized.uri);
 
-    console.log(`✅ Compressed photo ${index + 1}:`, resized.uri);
-
-    // Create unique filename using timestamp, random ID, and index
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substring(2, 9);
-    const uniqueFileName = photo.fileName 
-      ? `${timestamp}_${randomId}_${index}_${photo.fileName}` 
-      : `auto_sync_${timestamp}_${randomId}_${index}.jpg`;
-
-    return {
-      uri: resized.uri,
-      type: "image/jpeg",
-      fileName: uniqueFileName,
-      timestamp: photo.timestamp,
-      dateString: photo.dateString,
-    };
-  } catch (err) {
-    console.log(`❌ Compression failed for photo ${index + 1}, using original:`, err);
-    
-    // Even for failed compression, create unique filename
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36).substring(2, 9);
-    const uniqueFileName = photo.fileName 
-      ? `${timestamp}_${randomId}_${index}_${photo.fileName}` 
-      : `auto_sync_${timestamp}_${randomId}_${index}.jpg`;
-    
-    return {
-      uri: photo.uri,
-      type: "image/jpeg",
-      fileName: uniqueFileName,
-      timestamp: photo.timestamp,
-      dateString: photo.dateString,
-    };
-  }
-};
+      return {
+        uri: resized.uri,
+        type: "image/jpeg",
+        fileName: photo.fileName || `auto_sync_${index + 1}_${Date.now()}.jpg`,
+        timestamp: photo.timestamp,
+        dateString: photo.dateString,
+      };
+    } catch (err) {
+      console.log(`❌ Compression failed for photo ${index + 1}, using original:`, err);
+      return {
+        uri: photo.uri,
+        type: "image/jpeg",
+        fileName: photo.fileName || `auto_sync_${index + 1}_${Date.now()}.jpg`,
+        timestamp: photo.timestamp,
+        dateString: photo.dateString,
+      };
+    }
+  };
 
   useEffect(() => {
     removeExpiredEvents();
@@ -815,50 +846,122 @@ const compressPhoto = async (photo, index) => {
           visible={showAutoSyncModal}
           photoCount={newPhotosData.count}
           previewImage={newPhotosData.previewImage}
-onCreate={async () => {
-  setShowAutoSyncModal(false);
-
-  const compressedPhotos = [];
-
-  for (const photo of newPhotosData.photos) {
-    const compressed = await compressPhoto(photo);
-    compressedPhotos.push(compressed);
-  }
-
-  await AsyncStorage.setItem(
-    "AUTO_SYNC_PHOTOS",
-    JSON.stringify(compressedPhotos)
-  );
-
-  // ✅ SAVE THE DATE AS HANDLED
-  if (newPhotosData.dateString) {
-    try {
-      // Get existing handled dates
-      const handledDatesJson = await AsyncStorage.getItem(AUTO_SYNC_HANDLED_DATES_KEY);
-      const handledDates = handledDatesJson ? JSON.parse(handledDatesJson) : [];
-      
-      // Add the new date if not already there
-      if (!handledDates.includes(newPhotosData.dateString)) {
-        handledDates.push(newPhotosData.dateString);
-        await AsyncStorage.setItem(
-          AUTO_SYNC_HANDLED_DATES_KEY,
-          JSON.stringify(handledDates)
-        );
-        console.log('✅ Saved handled date:', newPhotosData.dateString);
-        console.log('📅 All handled dates:', handledDates);
-      }
-    } catch (error) {
-      console.error('❌ Error saving handled date:', error);
-    }
-  }
-
-  navigation.navigate("CreateHive");
-}}
-
-
-          onSkip={() => {
-            console.log('⏭️ Skip clicked');
+          onCreate={async () => {
             setShowAutoSyncModal(false);
+
+            const compressedPhotos = [];
+
+            for (const photo of newPhotosData.photos) {
+              const compressed = await compressPhoto(photo);
+              compressedPhotos.push(compressed);
+            }
+
+            await AsyncStorage.setItem(
+              "AUTO_SYNC_PHOTOS",
+              JSON.stringify(compressedPhotos)
+            );
+
+            // ✅ SAVE THE DATE AS HANDLED
+            if (newPhotosData.dateString) {
+              try {
+                // Get existing handled dates
+                const handledDatesJson = await AsyncStorage.getItem(AUTO_SYNC_HANDLED_DATES_KEY);
+                const handledDates = handledDatesJson ? JSON.parse(handledDatesJson) : [];
+
+                // Add the new date if not already there
+                if (!handledDates.includes(newPhotosData.dateString)) {
+                  handledDates.push(newPhotosData.dateString);
+                  await AsyncStorage.setItem(
+                    AUTO_SYNC_HANDLED_DATES_KEY,
+                    JSON.stringify(handledDates)
+                  );
+                  console.log('✅ Saved handled date:', newPhotosData.dateString);
+                  console.log('📅 All handled dates:', handledDates);
+                }
+              } catch (error) {
+                console.error('❌ Error saving handled date:', error);
+              }
+            }
+
+            navigation.navigate("CreateHive");
+          }}
+
+
+          onSkip={async () => {
+            console.log('⏭️ Skip clicked');
+
+            // Save the current date as skipped
+            if (newPhotosData.dateString) {
+              try {
+                const skippedDatesJson = await AsyncStorage.getItem(AUTO_SYNC_SKIPPED_DATES_KEY);
+                const skippedDates = skippedDatesJson ? JSON.parse(skippedDatesJson) : [];
+
+                if (!skippedDates.includes(newPhotosData.dateString)) {
+                  skippedDates.push(newPhotosData.dateString);
+                  await AsyncStorage.setItem(
+                    AUTO_SYNC_SKIPPED_DATES_KEY,
+                    JSON.stringify(skippedDates)
+                  );
+                  console.log('✅ Saved skipped date:', newPhotosData.dateString);
+                  console.log('⏭️ All skipped dates:', skippedDates);
+                }
+              } catch (error) {
+                console.error('❌ Error saving skipped date:', error);
+              }
+            }
+
+            setShowAutoSyncModal(false);
+
+            // Immediately check for next available date
+            setTimeout(async () => {
+              try {
+                console.log('🔄 Checking for next date...');
+                const result = await checkForNewCameraPhotos();
+
+                if (result.hasNewPhotos && result.photoCount > 0) {
+                  const handledDatesJson = await AsyncStorage.getItem(AUTO_SYNC_HANDLED_DATES_KEY);
+                  const handledDates = handledDatesJson ? JSON.parse(handledDatesJson) : [];
+
+                  const skippedDatesJson = await AsyncStorage.getItem(AUTO_SYNC_SKIPPED_DATES_KEY);
+                  const skippedDates = skippedDatesJson ? JSON.parse(skippedDatesJson) : [];
+
+                  const availableDates = Object.keys(result.photosByDate).sort().reverse();
+
+                  let nextDateToShow = null;
+                  for (const date of availableDates) {
+                    if (!handledDates.includes(date) && !skippedDates.includes(date)) {
+                      nextDateToShow = date;
+                      break;
+                    }
+                  }
+
+                  console.log('📅 Next date to show:', nextDateToShow);
+
+                  if (nextDateToShow) {
+                    const datePhotos = result.photosByDate[nextDateToShow] || [];
+
+                    if (datePhotos.length > 0) {
+                      const previewUri = datePhotos[0]?.uri;
+
+                      setNewPhotosData({
+                        count: datePhotos.length,
+                        photos: datePhotos,
+                        previewImage: previewUri || null,
+                        dateString: nextDateToShow,
+                      });
+
+                      setTimeout(() => {
+                        setShowAutoSyncModal(true);
+                      }, 300);
+                    }
+                  } else {
+                    console.log('ℹ️ No more dates to show');
+                  }
+                }
+              } catch (error) {
+                console.error('❌ Error checking next date:', error);
+              }
+            }, 500);
           }}
         />
 
